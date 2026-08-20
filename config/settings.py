@@ -44,7 +44,17 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
 
-    "core",
+    "apps.accounts.apps.AccountsConfig",
+    "apps.analytics.apps.AnalyticsConfig",
+    "apps.assessments.apps.AssessmentsConfig",
+    "apps.community.apps.CommunityConfig",
+    "apps.core.apps.CoreConfig",
+    "apps.courses.apps.CoursesConfig",
+    "apps.enrollments.apps.EnrollmentsConfig",
+    "apps.notifications.apps.NotificationsConfig",
+    "apps.orders.apps.OrdersConfig",
+    "apps.payments.apps.PaymentsConfig",
+    "apps.reviews.apps.ReviewsConfig",
 ]
 
 MIDDLEWARE = [
