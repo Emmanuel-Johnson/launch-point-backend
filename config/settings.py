@@ -45,17 +45,9 @@ INSTALLED_APPS = [
     "rest_framework",
 
     "apps.accounts.apps.AccountsConfig",
-    "apps.analytics.apps.AnalyticsConfig",
-    "apps.assessments.apps.AssessmentsConfig",
-    "apps.community.apps.CommunityConfig",
-    "apps.core.apps.CoreConfig",
-    "apps.courses.apps.CoursesConfig",
-    "apps.enrollments.apps.EnrollmentsConfig",
-    "apps.notifications.apps.NotificationsConfig",
-    "apps.orders.apps.OrdersConfig",
-    "apps.payments.apps.PaymentsConfig",
-    "apps.reviews.apps.ReviewsConfig",
 ]
+
+AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
