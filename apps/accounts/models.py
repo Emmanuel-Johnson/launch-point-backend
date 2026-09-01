@@ -54,6 +54,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=255
     )
 
+    email_verified = models.BooleanField(
+        default=False
+    )
+
+    email_verification_code = models.CharField(
+        max_length=6,
+        blank=True,
+        null=True
+    )
+
+    email_verification_code_expires_at = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
     is_active = models.BooleanField(
         default=True
     )
