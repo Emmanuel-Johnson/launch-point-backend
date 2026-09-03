@@ -28,6 +28,28 @@ class SignupSerializer(serializers.Serializer):
         return value.strip().lower()
 
 
+class VerifyEmailOTPSerializer(serializers.Serializer):
+
+    email = serializers.EmailField(
+        required=True,
+    )
+
+    otp = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        min_length=6,
+        max_length=6,
+    )
+
+    def validate_otp(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "OTP must contain only numbers."
+            )
+
+        return value
+
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
@@ -44,20 +66,3 @@ class LoginSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         return value.strip().lower()
-
-
-class VerifyEmailOTPSerializer(serializers.Serializer):
-    otp = serializers.CharField(
-        required=True,
-        allow_blank=False,
-        min_length=6,
-        max_length=6,
-    )
-
-    def validate_otp(self, value):
-        if not value.isdigit():
-            raise serializers.ValidationError(
-                "OTP must contain only numbers."
-            )
-
-        return value
