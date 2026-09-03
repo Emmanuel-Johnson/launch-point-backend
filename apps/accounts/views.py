@@ -1,20 +1,26 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from .serializers import (
     SignupSerializer,
     VerifyEmailOTPSerializer,
 )
-from .services import signup_user
+from .services import (
+    signup_user,
+    verify_email_otp,
+)
 
 
 class SignupView(APIView):
 
     def post(self, request):
-        serializer = SignupSerializer(data=request.data)
+        serializer = SignupSerializer(
+            data=request.data
+        )
 
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(
+            raise_exception=True
+        )
 
         result = signup_user(
             serializer.validated_data
@@ -29,17 +35,21 @@ class SignupView(APIView):
 class VerifyEmailOTPView(APIView):
 
     def post(self, request):
+        print(request.data)
         serializer = VerifyEmailOTPSerializer(
             data=request.data
         )
 
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(
+            raise_exception=True
+        )
 
-        # OTP verification service will be added next.
+        result = verify_email_otp(
+            email=serializer.validated_data["email"],
+            otp=serializer.validated_data["otp"],
+        )
 
         return Response(
-            {
-                "message": "OTP data is valid."
-            },
+            result,
             status=status.HTTP_200_OK,
         )

@@ -12,3 +12,21 @@ class InvalidCredentialsException(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_detail = "Invalid email or password."
     default_code = "invalid_credentials"
+
+
+class InvalidEmailVerificationOTPException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Invalid email verification OTP."
+    default_code = "invalid_email_verification_otp"
+
+
+class EmailVerificationOTPExpiredException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Email verification OTP has expired."
+    default_code = "email_verification_otp_expired"
+
+
+class EmailAlreadyVerifiedException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Email is already verified."
+    default_code = "email_already_verified"

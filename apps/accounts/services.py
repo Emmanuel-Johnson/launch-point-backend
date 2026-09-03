@@ -1,17 +1,27 @@
 from datetime import timedelta
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import (
+    check_password,
+    make_password,
+)
 from django.utils import timezone
 from .exceptions import (
     EmailAlreadyExistsException,
     InvalidCredentialsException,
+    InvalidEmailVerificationOTPException,
+    EmailVerificationOTPExpiredException,
+    EmailAlreadyVerifiedException,
 )
 from .repositories import (
     create_user,
     get_user_by_email,
     create_email_verification_otp,
+    get_latest_email_verification_otp,
     delete_email_verification_otps,
 )
-from .utils import generate_otp, send_verification_email
+from .utils import (
+    generate_otp,
+    send_verification_email,
+)
 
 
 def signup_user(validated_data):
@@ -41,29 +51,86 @@ def signup_user(validated_data):
     # Hash the OTP before storing it
     otp_hash = make_password(otp)
 
-    # Set OTP expiry time
+    # OTP expires after 10 minutes
     expires_at = timezone.now() + timedelta(minutes=10)
 
-    # Store the hashed OTP
+    # Store hashed OTP
     create_email_verification_otp(
         user=user,
         otp_hash=otp_hash,
         expires_at=expires_at,
     )
 
-    # Send OTP to user's email
+    # Send raw OTP to user's email
     send_verification_email(
         user.email,
         otp,
     )
 
     return {
-        "message": "Account created successfully. Please verify your email.",
+        "message": (
+            "Account created successfully. "
+            "Please verify your email."
+        ),
         "user": {
             "id": user.id,
             "full_name": user.full_name,
             "email": user.email,
         },
+    }
+
+
+def verify_email_otp(email, otp):
+    # Find user by email
+    user = get_user_by_email(email)
+
+    # Do not reveal whether the email exists
+    if not user:
+        raise InvalidEmailVerificationOTPException()
+
+    # Check whether email is already verified
+    if user.email_verified:
+        raise EmailAlreadyVerifiedException()
+
+    # Get the latest OTP
+    verification_otp = get_latest_email_verification_otp(user)
+
+    if not verification_otp:
+        raise InvalidEmailVerificationOTPException()
+
+    # Check OTP expiry
+    if timezone.now() > verification_otp.expires_at:
+        raise EmailVerificationOTPExpiredException()
+
+    # Compare entered OTP with hashed OTP
+    if not check_password(
+        otp,
+        verification_otp.otp_hash,
+    ):
+        verification_otp.attempts += 1
+
+        verification_otp.save(
+            update_fields=["attempts"]
+        )
+
+        raise InvalidEmailVerificationOTPException()
+
+    # OTP is correct
+    user.email_verified = True
+
+    user.save(
+        update_fields=[
+            "email_verified",
+            "updated_at",
+        ]
+    )
+
+    # Delete OTP after successful verification
+    delete_email_verification_otps(user)
+
+    return {
+        "message": "Email verified successfully.",
+        "email": user.email,
     }
 
 
