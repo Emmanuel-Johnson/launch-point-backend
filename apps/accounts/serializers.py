@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from .validators import validate_full_name, validate_password
 
 
@@ -45,3 +44,20 @@ class LoginSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         return value.strip().lower()
+
+
+class VerifyEmailOTPSerializer(serializers.Serializer):
+    otp = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        min_length=6,
+        max_length=6,
+    )
+
+    def validate_otp(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "OTP must contain only numbers."
+            )
+
+        return value
