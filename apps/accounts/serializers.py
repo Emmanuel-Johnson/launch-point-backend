@@ -6,7 +6,7 @@ class SignupSerializer(serializers.Serializer):
     full_name = serializers.CharField(
         required=True,
         allow_blank=False,
-        max_length=50,
+        max_length=150,
         validators=[validate_full_name],
     )
 

@@ -8,6 +8,12 @@ class EmailAlreadyExistsException(APIException):
     default_code = "email_already_exists"
 
 
+class EmailNotVerifiedException(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = "Please verify your email before logging in."
+    default_code = "email_not_verified"
+
+
 class InvalidCredentialsException(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_detail = "Invalid email or password."

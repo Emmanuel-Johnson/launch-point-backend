@@ -10,6 +10,7 @@ from .exceptions import (
     InvalidEmailVerificationOTPException,
     EmailVerificationOTPExpiredException,
     EmailAlreadyVerifiedException,
+    EmailNotVerifiedException,
 )
 from .repositories import (
     create_user,
@@ -22,6 +23,16 @@ from .utils import (
     generate_otp,
     send_verification_email,
 )
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
+def generate_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+
+    return {
+        "access": str(refresh.access_token),
+        "refresh": str(refresh),
+    }
 
 
 def signup_user(validated_data):
@@ -128,9 +139,16 @@ def verify_email_otp(email, otp):
     # Delete OTP after successful verification
     delete_email_verification_otps(user)
 
+    tokens = generate_tokens_for_user(user)
+
     return {
         "message": "Email verified successfully.",
-        "email": user.email,
+        "user": {
+            "id": user.id,
+            "full_name": user.full_name,
+            "email": user.email,
+        },
+        "tokens": tokens,
     }
 
 
@@ -138,12 +156,23 @@ def login_user(validated_data):
     email = validated_data["email"]
     password = validated_data["password"]
 
-    # Find user by email
+    # Find user
     user = get_user_by_email(email)
 
     # Check credentials
     if not user or not user.check_password(password):
         raise InvalidCredentialsException()
+
+    # Email must be verified
+    if not user.email_verified:
+        raise EmailNotVerifiedException()
+
+    # User must be active
+    if not user.is_active:
+        raise InvalidCredentialsException()
+
+    # Generate JWT tokens
+    tokens = generate_tokens_for_user(user)
 
     return {
         "message": "Login successful.",
@@ -152,4 +181,5 @@ def login_user(validated_data):
             "full_name": user.full_name,
             "email": user.email,
         },
+        "tokens": tokens,
     }
