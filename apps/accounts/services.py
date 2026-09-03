@@ -118,12 +118,6 @@ def verify_email_otp(email, otp):
         otp,
         verification_otp.otp_hash,
     ):
-        verification_otp.attempts += 1
-
-        verification_otp.save(
-            update_fields=["attempts"]
-        )
-
         raise InvalidEmailVerificationOTPException()
 
     # OTP is correct

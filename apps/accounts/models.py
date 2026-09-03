@@ -107,10 +107,6 @@ class EmailVerificationOTP(models.Model):
 
     expires_at = models.DateTimeField()
 
-    attempts = models.PositiveIntegerField(
-        default=0
-    )
-
     created_at = models.DateTimeField(
         default=timezone.now
     )
