@@ -41,3 +41,15 @@ class EmailAlreadyVerifiedException(APIException):
 class OTPResendTooSoonException(APIException):
     status_code = 429
     default_detail = "Please wait before requesting another OTP."
+
+
+class InvalidPasswordResetOTPException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Invalid password reset OTP."
+    default_code = "invalid_password_reset_otp"
+
+
+class PasswordResetOTPExpiredException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Password reset OTP has expired."
+    default_code = "password_reset_otp_expired"

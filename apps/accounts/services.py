@@ -12,6 +12,8 @@ from .exceptions import (
     EmailAlreadyVerifiedException,
     EmailNotVerifiedException,
     OTPResendTooSoonException,
+    InvalidPasswordResetOTPException,
+    PasswordResetOTPExpiredException,
 )
 from .repositories import (
     create_user,
@@ -22,6 +24,7 @@ from .repositories import (
     delete_email_verification_otps,
     create_password_reset_otp,
     delete_password_reset_otps,
+    get_latest_password_reset_otp,
 )
 from .utils import (
     generate_otp,
@@ -266,3 +269,24 @@ def forgot_password(email):
         "message": "A password reset OTP has been sent."
     }
 
+
+def verify_password_reset_otp(email, otp):
+    user = get_verified_user_by_email(email)
+
+    if not user:
+        raise InvalidPasswordResetOTPException()
+
+    password_reset_otp = get_latest_password_reset_otp(user)
+
+    if not password_reset_otp:
+        raise InvalidPasswordResetOTPException()
+
+    if timezone.now() > password_reset_otp.expires_at:
+        raise PasswordResetOTPExpiredException()
+
+    if not check_password(otp, password_reset_otp.otp_hash):
+        raise InvalidPasswordResetOTPException()
+
+    return {
+        "message": "Password reset OTP verified successfully."
+    }
