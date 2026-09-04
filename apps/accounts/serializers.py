@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from .validators import validate_full_name, validate_password
 
 
@@ -7,7 +6,7 @@ class SignupSerializer(serializers.Serializer):
     full_name = serializers.CharField(
         required=True,
         allow_blank=False,
-        max_length=50,
+        max_length=150,
         validators=[validate_full_name],
     )
 
@@ -23,6 +22,37 @@ class SignupSerializer(serializers.Serializer):
         write_only=True,
         max_length=128,
         validators=[validate_password],
+    )
+
+    def validate_email(self, value):
+        return value.strip().lower()
+
+
+class VerifyEmailOTPSerializer(serializers.Serializer):
+
+    email = serializers.EmailField(
+        required=True,
+    )
+
+    otp = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        min_length=6,
+        max_length=6,
+    )
+
+    def validate_otp(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "OTP must contain only numbers."
+            )
+
+        return value
+
+
+class ResendEmailVerificationOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True
     )
 
     def validate_email(self, value):
@@ -45,3 +75,37 @@ class LoginSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         return value.strip().lower()
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True,
+        max_length=254,
+    )
+
+    def validate_email(self, value):
+        return value.strip().lower()
+
+
+class VerifyPasswordResetOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True,
+        max_length=254,
+    )
+
+    otp = serializers.CharField(
+        required=True,
+        min_length=6,
+        max_length=6,
+    )
+
+    def validate_email(self, value):
+        return value.strip().lower()
+
+    def validate_otp(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError(
+                "OTP must contain only digits."
+            )
+
+        return value

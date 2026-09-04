@@ -1,10 +1,46 @@
-# business logic layer
-
+from datetime import timedelta
+from django.contrib.auth.hashers import (
+    check_password,
+    make_password,
+)
+from django.utils import timezone
 from .exceptions import (
     EmailAlreadyExistsException,
     InvalidCredentialsException,
+    InvalidEmailVerificationOTPException,
+    EmailVerificationOTPExpiredException,
+    EmailAlreadyVerifiedException,
+    EmailNotVerifiedException,
+    OTPResendTooSoonException,
+    InvalidPasswordResetOTPException,
+    PasswordResetOTPExpiredException,
 )
-from .repositories import create_user, get_user_by_email
+from .repositories import (
+    create_user,
+    get_user_by_email,
+    get_verified_user_by_email,
+    create_email_verification_otp,
+    get_latest_email_verification_otp,
+    delete_email_verification_otps,
+    create_password_reset_otp,
+    delete_password_reset_otps,
+    get_latest_password_reset_otp,
+)
+from .utils import (
+    generate_otp,
+    send_verification_email,
+    send_password_reset_otp_email,
+)
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
+def generate_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+
+    return {
+        "access": str(refresh.access_token),
+        "refresh": str(refresh),
+    }
 
 
 def signup_user(validated_data):
@@ -15,18 +51,48 @@ def signup_user(validated_data):
     # Check whether the email is already registered
     existing_user = get_user_by_email(email)
 
-    if existing_user:
+    if existing_user and existing_user.email_verified:
         raise EmailAlreadyExistsException()
 
-    # Create the user
-    user = create_user(
+    if existing_user:
+        user = existing_user
+    else:
+        user = create_user(
         full_name=full_name,
         email=email,
         password=password,
+        )
+
+    # Delete any existing OTPs for this user
+    delete_email_verification_otps(user)
+
+    # Generate a new 6-digit OTP
+    otp = generate_otp()
+
+    # Hash the OTP before storing it
+    otp_hash = make_password(otp)
+
+    # OTP expires after 10 minutes
+    expires_at = timezone.now() + timedelta(minutes=10)
+
+    # Store hashed OTP
+    create_email_verification_otp(
+        user=user,
+        otp_hash=otp_hash,
+        expires_at=expires_at,
+    )
+
+    # Send raw OTP to user's email
+    send_verification_email(
+        user.email,
+        otp,
     )
 
     return {
-        "message": "Account created successfully.",
+        "message": (
+            "Account created successfully. "
+            "Please verify your email."
+        ),
         "user": {
             "id": user.id,
             "full_name": user.full_name,
@@ -35,16 +101,128 @@ def signup_user(validated_data):
     }
 
 
+def verify_email_otp(email, otp):
+    # Find user by email
+    user = get_user_by_email(email)
+
+    # Do not reveal whether the email exists
+    if not user:
+        raise InvalidEmailVerificationOTPException()
+
+    # Check whether email is already verified
+    if user.email_verified:
+        raise EmailAlreadyVerifiedException()
+
+    # Get the latest OTP
+    verification_otp = get_latest_email_verification_otp(user)
+
+    if not verification_otp:
+        raise InvalidEmailVerificationOTPException()
+
+    # Check OTP expiry
+    if timezone.now() > verification_otp.expires_at:
+        raise EmailVerificationOTPExpiredException()
+
+    # Compare entered OTP with hashed OTP
+    if not check_password(
+        otp,
+        verification_otp.otp_hash,
+    ):
+        raise InvalidEmailVerificationOTPException()
+
+    # OTP is correct
+    user.email_verified = True
+
+    user.save(
+        update_fields=[
+            "email_verified",
+            "updated_at",
+        ]
+    )
+
+    # Delete OTP after successful verification
+    delete_email_verification_otps(user)
+
+    tokens = generate_tokens_for_user(user)
+
+    return {
+        "message": "Email verified successfully.",
+        "user": {
+            "id": user.id,
+            "full_name": user.full_name,
+            "email": user.email,
+        },
+        "tokens": tokens,
+    }
+
+
+def resend_verification_otp(email):
+    user = get_user_by_email(email)
+
+    if not user:
+        raise InvalidEmailVerificationOTPException()
+
+    if user.email_verified:
+        raise EmailAlreadyVerifiedException()
+
+    latest_otp = get_latest_email_verification_otp(user)
+
+    if latest_otp:
+        cooldown_end = latest_otp.created_at + timedelta(seconds=60)
+
+        if timezone.now() < cooldown_end:
+            raise OTPResendTooSoonException()
+
+    # Delete the previous OTP
+    delete_email_verification_otps(user)
+
+    # Generate a new OTP
+    otp = generate_otp()
+
+    # Hash OTP before storing
+    otp_hash = make_password(otp)
+
+    # OTP expires after 10 minutes
+    expires_at = timezone.now() + timedelta(minutes=10)
+
+    create_email_verification_otp(
+        user=user,
+        otp_hash=otp_hash,
+        expires_at=expires_at,
+    )
+
+    # Send the raw OTP to the user's email
+    send_verification_email(
+        email=user.email,
+        otp=otp,
+    )
+
+    return {
+        "message": "A new verification OTP has been sent."
+    }
+
+
 def login_user(validated_data):
     email = validated_data["email"]
     password = validated_data["password"]
 
-    # Find user by email
+    # Find user
     user = get_user_by_email(email)
 
     # Check credentials
     if not user or not user.check_password(password):
         raise InvalidCredentialsException()
+
+    # Email must be verified
+    if not user.email_verified:
+        raise EmailNotVerifiedException()
+
+    # User must be active
+    if not user.is_active:
+        raise InvalidCredentialsException()
+
+    # Generate JWT tokens
+    tokens = generate_tokens_for_user(user)
 
     return {
         "message": "Login successful.",
@@ -53,4 +231,62 @@ def login_user(validated_data):
             "full_name": user.full_name,
             "email": user.email,
         },
+        "tokens": tokens,
+    }
+
+
+def forgot_password(email):
+    user = get_verified_user_by_email(email)
+
+    if not user:
+        raise InvalidCredentialsException()
+
+    # Delete any previous password reset OTPs
+    delete_password_reset_otps(user)
+
+    # Generate a new OTP
+    otp = generate_otp()
+
+    # Hash the OTP before storing it
+    otp_hash = make_password(otp)
+
+    # OTP expires after 10 minutes
+    expires_at = timezone.now() + timedelta(minutes=10)
+
+    create_password_reset_otp(
+        user=user,
+        otp_hash=otp_hash,
+        expires_at=expires_at,
+    )
+
+    # Send the raw OTP to the user's email
+    send_password_reset_otp_email(
+        email=user.email,
+        otp=otp,
+    )
+
+    return {
+        "message": "A password reset OTP has been sent."
+    }
+
+
+def verify_password_reset_otp(email, otp):
+    user = get_verified_user_by_email(email)
+
+    if not user:
+        raise InvalidPasswordResetOTPException()
+
+    password_reset_otp = get_latest_password_reset_otp(user)
+
+    if not password_reset_otp:
+        raise InvalidPasswordResetOTPException()
+
+    if timezone.now() > password_reset_otp.expires_at:
+        raise PasswordResetOTPExpiredException()
+
+    if not check_password(otp, password_reset_otp.otp_hash):
+        raise InvalidPasswordResetOTPException()
+
+    return {
+        "message": "Password reset OTP verified successfully."
     }
