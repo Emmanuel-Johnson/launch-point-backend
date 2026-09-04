@@ -44,15 +44,17 @@ def signup_user(validated_data):
     # Check whether the email is already registered
     existing_user = get_user_by_email(email)
 
-    if existing_user:
+    if existing_user and existing_user.email_verified:
         raise EmailAlreadyExistsException()
 
-    # Create the user
-    user = create_user(
+    if existing_user:
+        user = existing_user
+    else:
+        user = create_user(
         full_name=full_name,
         email=email,
         password=password,
-    )
+        )
 
     # Delete any existing OTPs for this user
     delete_email_verification_otps(user)
