@@ -6,6 +6,7 @@ from .views import (
     LoginView,
     LogoutView,
     ResendEmailVerificationOTPView,
+    ForgotPasswordView,
 )
 
 
@@ -33,6 +34,12 @@ urlpatterns = [
         "login/",
         LoginView.as_view(),
         name="login",
+    ),
+
+    path(
+        "forgot-password/",
+        ForgotPasswordView.as_view(),
+        name="forgot-password",
     ),
 
     path(

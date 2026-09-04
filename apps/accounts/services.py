@@ -11,18 +11,22 @@ from .exceptions import (
     EmailVerificationOTPExpiredException,
     EmailAlreadyVerifiedException,
     EmailNotVerifiedException,
-    OTPResendTooSoonException
+    OTPResendTooSoonException,
 )
 from .repositories import (
     create_user,
     get_user_by_email,
+    get_verified_user_by_email,
     create_email_verification_otp,
     get_latest_email_verification_otp,
     delete_email_verification_otps,
+    create_password_reset_otp,
+    delete_password_reset_otps,
 )
 from .utils import (
     generate_otp,
     send_verification_email,
+    send_password_reset_otp_email,
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -226,3 +230,39 @@ def login_user(validated_data):
         },
         "tokens": tokens,
     }
+
+
+def forgot_password(email):
+    user = get_verified_user_by_email(email)
+
+    if not user:
+        raise InvalidCredentialsException()
+
+    # Delete any previous password reset OTPs
+    delete_password_reset_otps(user)
+
+    # Generate a new OTP
+    otp = generate_otp()
+
+    # Hash the OTP before storing it
+    otp_hash = make_password(otp)
+
+    # OTP expires after 10 minutes
+    expires_at = timezone.now() + timedelta(minutes=10)
+
+    create_password_reset_otp(
+        user=user,
+        otp_hash=otp_hash,
+        expires_at=expires_at,
+    )
+
+    # Send the raw OTP to the user's email
+    send_password_reset_otp_email(
+        email=user.email,
+        otp=otp,
+    )
+
+    return {
+        "message": "A password reset OTP has been sent."
+    }
+

@@ -1,4 +1,4 @@
-from .models import User, EmailVerificationOTP
+from .models import User, EmailVerificationOTP, PasswordResetOTP
 
 
 def create_user(**validated_data):
@@ -13,6 +13,13 @@ def get_user_by_email(email):
     Return the user with the given email, or None if not found.
     """
     return User.objects.filter(email=email).first()
+
+
+def get_verified_user_by_email(email):
+    return User.objects.filter(
+        email=email,
+        email_verified=True,
+    ).first()
 
 
 def create_email_verification_otp(user, otp_hash, expires_at):
@@ -42,3 +49,24 @@ def delete_email_verification_otps(user):
     EmailVerificationOTP.objects.filter(
         user=user
     ).delete()
+
+
+def create_password_reset_otp(user, otp_hash, expires_at):
+    return PasswordResetOTP.objects.create(
+        user=user,
+        otp_hash=otp_hash,
+        expires_at=expires_at,
+    )
+
+
+def get_latest_password_reset_otp(user):
+    return (
+        PasswordResetOTP.objects
+        .filter(user=user)
+        .order_by("-created_at")
+        .first()
+    )
+
+
+def delete_password_reset_otps(user):
+    PasswordResetOTP.objects.filter(user=user).delete()

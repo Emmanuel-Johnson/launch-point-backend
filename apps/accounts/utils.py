@@ -34,3 +34,31 @@ def send_verification_email(email, otp):
         recipient_list=[email],
         fail_silently=False,
     )
+
+
+def send_password_reset_otp_email(email, otp):
+    subject = "Password Reset OTP"
+
+    message = f"""
+Hello,
+
+We received a request to reset the password for your account.
+
+Your password reset OTP is:
+
+{otp}
+
+This OTP is valid for 10 minutes. For your security, please do not share this OTP with anyone.
+
+If you did not request a password reset, you can safely ignore this email.
+
+Regards,
+Your Support Team
+"""
+
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+    )

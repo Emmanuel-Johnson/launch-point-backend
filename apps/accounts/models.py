@@ -116,3 +116,25 @@ class EmailVerificationOTP(models.Model):
 
     def __str__(self):
         return f"Email verification OTP - {self.user.email}"
+
+
+class PasswordResetOTP(models.Model):
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="password_reset_otps",
+    )
+
+    otp_hash = models.CharField(
+        max_length=128
+    )
+
+    expires_at = models.DateTimeField()
+
+    created_at = models.DateTimeField(
+        default=timezone.now
+    )
+
+    class Meta:
+        db_table = "password_reset_otps"

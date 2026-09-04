@@ -11,6 +11,7 @@ from .serializers import (
     VerifyEmailOTPSerializer,
     LoginSerializer,
     ResendEmailVerificationOTPSerializer,
+    ForgotPasswordSerializer,
 )
 
 from .services import (
@@ -18,6 +19,7 @@ from .services import (
     verify_email_otp,
     login_user,
     resend_verification_otp,
+    forgot_password,
 )
 
 
@@ -100,6 +102,23 @@ class LoginView(APIView):
 
         result = login_user(
             serializer.validated_data
+        )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )
+
+
+class ForgotPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        result = forgot_password(
+            email=serializer.validated_data["email"]
         )
 
         return Response(

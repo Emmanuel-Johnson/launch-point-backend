@@ -75,3 +75,13 @@ class LoginSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         return value.strip().lower()
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True,
+        max_length=254,
+    )
+
+    def validate_email(self, value):
+        return value.strip().lower()
