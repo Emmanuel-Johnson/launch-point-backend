@@ -5,6 +5,7 @@ from .views import (
     VerifyEmailOTPView,
     LoginView,
     LogoutView,
+    ResendEmailVerificationOTPView,
 )
 
 
@@ -20,6 +21,12 @@ urlpatterns = [
         "verify-email/",
         VerifyEmailOTPView.as_view(),
         name="verify-email",
+    ),
+
+    path(
+        "resend-verification-otp/",
+        ResendEmailVerificationOTPView.as_view(),
+        name="resend-verification-otp",
     ),
 
     path(

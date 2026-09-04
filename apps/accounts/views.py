@@ -10,12 +10,14 @@ from .serializers import (
     SignupSerializer,
     VerifyEmailOTPSerializer,
     LoginSerializer,
+    ResendEmailVerificationOTPSerializer,
 )
 
 from .services import (
     signup_user,
     verify_email_otp,
     login_user,
+    resend_verification_otp,
 )
 
 
@@ -61,6 +63,26 @@ class VerifyEmailOTPView(APIView):
         return Response(
             result,
             status=status.HTTP_200_OK,
+        )
+
+
+class ResendEmailVerificationOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ResendEmailVerificationOTPSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        result = resend_verification_otp(
+            email=serializer.validated_data["email"]
+        )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK
         )
 
 

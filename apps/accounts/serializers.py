@@ -50,6 +50,15 @@ class VerifyEmailOTPSerializer(serializers.Serializer):
         return value
 
 
+class ResendEmailVerificationOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True
+    )
+
+    def validate_email(self, value):
+        return value.strip().lower()
+
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,

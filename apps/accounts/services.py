@@ -11,6 +11,7 @@ from .exceptions import (
     EmailVerificationOTPExpiredException,
     EmailAlreadyVerifiedException,
     EmailNotVerifiedException,
+    OTPResendTooSoonException
 )
 from .repositories import (
     create_user,
@@ -143,6 +144,52 @@ def verify_email_otp(email, otp):
             "email": user.email,
         },
         "tokens": tokens,
+    }
+
+
+def resend_verification_otp(email):
+    user = get_user_by_email(email)
+
+    if not user:
+        raise InvalidEmailVerificationOTPException()
+
+    if user.email_verified:
+        raise EmailAlreadyVerifiedException()
+
+    latest_otp = get_latest_email_verification_otp(user)
+
+    if latest_otp:
+        cooldown_end = latest_otp.created_at + timedelta(seconds=60)
+
+        if timezone.now() < cooldown_end:
+            raise OTPResendTooSoonException()
+
+    # Delete the previous OTP
+    delete_email_verification_otps(user)
+
+    # Generate a new OTP
+    otp = generate_otp()
+
+    # Hash OTP before storing
+    otp_hash = make_password(otp)
+
+    # OTP expires after 10 minutes
+    expires_at = timezone.now() + timedelta(minutes=10)
+
+    create_email_verification_otp(
+        user=user,
+        otp_hash=otp_hash,
+        expires_at=expires_at,
+    )
+
+    # Send the raw OTP to the user's email
+    send_verification_email(
+        email=user.email,
+        otp=otp,
+    )
+
+    return {
+        "message": "A new verification OTP has been sent."
     }
 
 

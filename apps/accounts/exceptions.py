@@ -36,3 +36,8 @@ class EmailAlreadyVerifiedException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "Email is already verified."
     default_code = "email_already_verified"
+
+
+class OTPResendTooSoonException(APIException):
+    status_code = 429
+    default_detail = "Please wait before requesting another OTP."
