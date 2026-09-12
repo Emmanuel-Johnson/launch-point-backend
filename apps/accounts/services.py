@@ -290,3 +290,46 @@ def verify_password_reset_otp(email, otp):
     return {
         "message": "Password reset OTP verified successfully."
     }
+
+
+def resend_password_reset_otp(email):
+    user = get_verified_user_by_email(email)
+
+    if not user:
+        raise InvalidCredentialsException()
+
+    latest_otp = get_latest_password_reset_otp(user)
+
+    if latest_otp:
+        cooldown_end = latest_otp.created_at + timedelta(seconds=60)
+
+        if timezone.now() < cooldown_end:
+            raise OTPResendTooSoonException()
+
+    # Delete previous OTP
+    delete_password_reset_otps(user)
+
+    # Generate new OTP
+    otp = generate_otp()
+
+    # Hash OTP before storing
+    otp_hash = make_password(otp)
+
+    # OTP expires after 10 minutes
+    expires_at = timezone.now() + timedelta(minutes=10)
+
+    create_password_reset_otp(
+        user=user,
+        otp_hash=otp_hash,
+        expires_at=expires_at,
+    )
+
+    # Send raw OTP to email
+    send_password_reset_otp_email(
+        email=user.email,
+        otp=otp,
+    )
+
+    return {
+        "message": "A new password reset OTP has been sent."
+    }

@@ -52,7 +52,8 @@ class VerifyEmailOTPSerializer(serializers.Serializer):
 
 class ResendEmailVerificationOTPSerializer(serializers.Serializer):
     email = serializers.EmailField(
-        required=True
+        required=True,
+        max_length=254,
     )
 
     def validate_email(self, value):
@@ -109,3 +110,13 @@ class VerifyPasswordResetOTPSerializer(serializers.Serializer):
             )
 
         return value
+
+
+class ResendPasswordResetOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True,
+        max_length=254,
+    )
+
+    def validate_email(self, value):
+        return value.strip().lower()

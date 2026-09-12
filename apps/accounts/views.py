@@ -2,10 +2,8 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-
 from .serializers import (
     SignupSerializer,
     VerifyEmailOTPSerializer,
@@ -13,8 +11,8 @@ from .serializers import (
     ResendEmailVerificationOTPSerializer,
     ForgotPasswordSerializer,
     VerifyPasswordResetOTPSerializer,
+    ResendPasswordResetOTPSerializer,
 )
-
 from .services import (
     signup_user,
     verify_email_otp,
@@ -22,6 +20,7 @@ from .services import (
     resend_verification_otp,
     forgot_password,
     verify_password_reset_otp,
+    resend_password_reset_otp,
 )
 
 
@@ -147,6 +146,26 @@ class VerifyPasswordResetOTPView(APIView):
         return Response(
             result,
             status=status.HTTP_200_OK,
+        )
+
+
+class ResendPasswordResetOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ResendPasswordResetOTPSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        result = resend_password_reset_otp(
+            email=serializer.validated_data["email"]
+        )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK
         )
 
 
