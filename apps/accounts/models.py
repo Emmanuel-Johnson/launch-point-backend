@@ -107,6 +107,10 @@ class EmailVerificationOTP(models.Model):
 
     expires_at = models.DateTimeField()
 
+    verification_attempts = models.PositiveSmallIntegerField(
+            default=0
+        )
+
     created_at = models.DateTimeField(
         default=timezone.now
     )
@@ -131,6 +135,10 @@ class PasswordResetOTP(models.Model):
     )
 
     expires_at = models.DateTimeField()
+
+    verification_attempts = models.PositiveSmallIntegerField(
+            default=0
+        )
 
     created_at = models.DateTimeField(
         default=timezone.now
