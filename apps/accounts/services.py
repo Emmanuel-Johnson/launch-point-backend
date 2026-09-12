@@ -1,9 +1,9 @@
 from datetime import timedelta
+from django.utils import timezone
 from django.contrib.auth.hashers import (
     check_password,
     make_password,
 )
-from django.utils import timezone
 from .exceptions import (
     EmailAlreadyExistsException,
     InvalidCredentialsException,
@@ -16,6 +16,9 @@ from .exceptions import (
     PasswordResetOTPExpiredException,
     OTPVerificationAttemptsExceededException,
     PasswordResetOTPAttemptsExceededException,
+    InvalidPasswordResetTokenException,
+    PasswordResetTokenExpiredException,
+
 )
 from .repositories import (
     create_user,
@@ -27,6 +30,9 @@ from .repositories import (
     create_password_reset_otp,
     delete_password_reset_otps,
     get_latest_password_reset_otp,
+    create_password_reset_token,
+    get_password_reset_token,
+    delete_password_reset_tokens,
 )
 from .utils import (
     generate_otp,
@@ -34,6 +40,8 @@ from .utils import (
     send_password_reset_otp_email,
 )
 from rest_framework_simplejwt.tokens import RefreshToken
+import hashlib
+import secrets
 
 
 def generate_tokens_for_user(user):
@@ -321,8 +329,23 @@ def verify_password_reset_otp(email, otp):
 
     delete_password_reset_otps(user)
 
+    # Remove any previous reset tokens
+    delete_password_reset_tokens(user)
+
+    # Generate new reset token
+    raw_token, token_hash = generate_password_reset_token()
+
+    expires_at = timezone.now() + timedelta(minutes=15)
+
+    create_password_reset_token(
+        user=user,
+        token_hash=token_hash,
+        expires_at=expires_at,
+    )
+
     return {
-        "message": "Password reset OTP verified successfully."
+        "message": "OTP verified successfully.",
+        "reset_token": raw_token,
     }
 
 
@@ -366,4 +389,45 @@ def resend_password_reset_otp(email):
 
     return {
         "message": "A new password reset OTP has been sent."
+    }
+
+
+def generate_password_reset_token():
+    raw_token = secrets.token_urlsafe(32)
+
+    token_hash = hashlib.sha256(
+        raw_token.encode()
+    ).hexdigest()
+
+    return raw_token, token_hash
+
+
+def reset_password(reset_token, new_password):
+
+    token_hash = hashlib.sha256(
+        reset_token.encode()
+    ).hexdigest()
+
+    token = get_password_reset_token(token_hash)
+
+    if not token:
+        raise InvalidPasswordResetTokenException()
+
+    if token.expires_at <= timezone.now():
+        raise PasswordResetTokenExpiredException()
+
+    user = token.user
+
+    user.set_password(new_password)
+    user.save(update_fields=["password"])
+
+    # Make token single-use
+    token.used_at = timezone.now()
+    token.save(update_fields=["used_at"])
+
+    # Remove any other reset tokens
+    delete_password_reset_tokens(user)
+
+    return {
+        "message": "Password reset successfully."
     }

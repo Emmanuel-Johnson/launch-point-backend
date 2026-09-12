@@ -1,4 +1,4 @@
-from .models import User, EmailVerificationOTP, PasswordResetOTP
+from .models import User, EmailVerificationOTP, PasswordResetOTP, PasswordResetToken
 
 
 def create_user(**validated_data):
@@ -70,3 +70,33 @@ def get_latest_password_reset_otp(user):
 
 def delete_password_reset_otps(user):
     PasswordResetOTP.objects.filter(user=user).delete()
+
+
+def create_password_reset_token(
+    user,
+    token_hash,
+    expires_at,
+):
+    return PasswordResetToken.objects.create(
+        user=user,
+        token_hash=token_hash,
+        expires_at=expires_at,
+    )
+
+
+def get_password_reset_token(token_hash):
+    return (
+        PasswordResetToken.objects
+        .filter(
+            token_hash=token_hash,
+            used_at__isnull=True,
+        )
+        .select_related("user")
+        .first()
+    )
+
+
+def delete_password_reset_tokens(user):
+    PasswordResetToken.objects.filter(
+        user=user
+    ).delete()
