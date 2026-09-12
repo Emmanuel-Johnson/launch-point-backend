@@ -6,6 +6,7 @@ from django.contrib.auth.models import (
 )
 from django.utils import timezone
 from django.conf import settings
+import uuid
 
 
 class CustomUserManager(BaseUserManager):
@@ -107,6 +108,10 @@ class EmailVerificationOTP(models.Model):
 
     expires_at = models.DateTimeField()
 
+    verification_attempts = models.PositiveSmallIntegerField(
+            default=0
+        )
+
     created_at = models.DateTimeField(
         default=timezone.now
     )
@@ -132,9 +137,49 @@ class PasswordResetOTP(models.Model):
 
     expires_at = models.DateTimeField()
 
+    verification_attempts = models.PositiveSmallIntegerField(
+            default=0
+        )
+
     created_at = models.DateTimeField(
         default=timezone.now
     )
 
     class Meta:
         db_table = "password_reset_otps"
+
+
+class PasswordResetToken(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="password_reset_tokens",
+    )
+
+    token_hash = models.CharField(
+        max_length=64,
+        unique=True,
+    )
+
+    expires_at = models.DateTimeField()
+
+    used_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(
+        default=timezone.now,
+    )
+
+    class Meta:
+        db_table = "password_reset_tokens"
+
+    def __str__(self):
+        return f"Password reset token - {self.user.email}"

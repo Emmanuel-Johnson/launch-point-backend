@@ -8,6 +8,8 @@ from .views import (
     ResendEmailVerificationOTPView,
     ForgotPasswordView,
     VerifyPasswordResetOTPView,
+    ResendPasswordResetOTPView,
+    ResetPasswordView,
 )
 
 
@@ -47,6 +49,18 @@ urlpatterns = [
         "verify-password-reset-otp/",
         VerifyPasswordResetOTPView.as_view(),
         name="verify-password-reset-otp",
+    ),
+
+    path(
+        "resend-password-reset-otp/",
+        ResendPasswordResetOTPView.as_view(),
+        name="resend-password-reset-otp",
+    ),
+
+    path(
+        "reset-password/",
+        ResetPasswordView.as_view(),
+        name="reset-password",
     ),
 
     path(

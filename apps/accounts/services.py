@@ -1,9 +1,9 @@
 from datetime import timedelta
+from django.utils import timezone
 from django.contrib.auth.hashers import (
     check_password,
     make_password,
 )
-from django.utils import timezone
 from .exceptions import (
     EmailAlreadyExistsException,
     InvalidCredentialsException,
@@ -14,6 +14,11 @@ from .exceptions import (
     OTPResendTooSoonException,
     InvalidPasswordResetOTPException,
     PasswordResetOTPExpiredException,
+    OTPVerificationAttemptsExceededException,
+    PasswordResetOTPAttemptsExceededException,
+    InvalidPasswordResetTokenException,
+    PasswordResetTokenExpiredException,
+
 )
 from .repositories import (
     create_user,
@@ -25,6 +30,9 @@ from .repositories import (
     create_password_reset_otp,
     delete_password_reset_otps,
     get_latest_password_reset_otp,
+    create_password_reset_token,
+    get_password_reset_token,
+    delete_password_reset_tokens,
 )
 from .utils import (
     generate_otp,
@@ -32,6 +40,8 @@ from .utils import (
     send_password_reset_otp_email,
 )
 from rest_framework_simplejwt.tokens import RefreshToken
+import hashlib
+import secrets
 
 
 def generate_tokens_for_user(user):
@@ -58,9 +68,9 @@ def signup_user(validated_data):
         user = existing_user
     else:
         user = create_user(
-        full_name=full_name,
-        email=email,
-        password=password,
+            full_name=full_name,
+            email=email,
+            password=password,
         )
 
     # Delete any existing OTPs for this user
@@ -72,8 +82,8 @@ def signup_user(validated_data):
     # Hash the OTP before storing it
     otp_hash = make_password(otp)
 
-    # OTP expires after 10 minutes
-    expires_at = timezone.now() + timedelta(minutes=10)
+    # OTP expires after 5 minutes
+    expires_at = timezone.now() + timedelta(minutes=5)
 
     # Store hashed OTP
     create_email_verification_otp(
@@ -128,6 +138,18 @@ def verify_email_otp(email, otp):
         otp,
         verification_otp.otp_hash,
     ):
+        # Count only wrong OTP attempts
+        verification_otp.verification_attempts += 1
+
+        verification_otp.save(
+            update_fields=["verification_attempts"]
+        )
+
+        # Maximum 5 wrong attempts
+        if verification_otp.verification_attempts >= 5:
+            delete_email_verification_otps(user)
+            raise OTPVerificationAttemptsExceededException()
+
         raise InvalidEmailVerificationOTPException()
 
     # OTP is correct
@@ -182,8 +204,8 @@ def resend_verification_otp(email):
     # Hash OTP before storing
     otp_hash = make_password(otp)
 
-    # OTP expires after 10 minutes
-    expires_at = timezone.now() + timedelta(minutes=10)
+    # OTP expires after 5 minutes
+    expires_at = timezone.now() + timedelta(minutes=5)
 
     create_email_verification_otp(
         user=user,
@@ -250,8 +272,8 @@ def forgot_password(email):
     # Hash the OTP before storing it
     otp_hash = make_password(otp)
 
-    # OTP expires after 10 minutes
-    expires_at = timezone.now() + timedelta(minutes=10)
+    # OTP expires after 5 minutes
+    expires_at = timezone.now() + timedelta(minutes=5)
 
     create_password_reset_otp(
         user=user,
@@ -281,12 +303,131 @@ def verify_password_reset_otp(email, otp):
     if not password_reset_otp:
         raise InvalidPasswordResetOTPException()
 
+    # Check OTP expiry
     if timezone.now() > password_reset_otp.expires_at:
         raise PasswordResetOTPExpiredException()
 
-    if not check_password(otp, password_reset_otp.otp_hash):
+    # Check OTP
+    if not check_password(
+        otp,
+        password_reset_otp.otp_hash,
+    ):
+        # Count only wrong attempts
+        password_reset_otp.verification_attempts += 1
+
+        password_reset_otp.save(
+            update_fields=["verification_attempts"]
+        )
+
+        # Maximum 5 wrong attempts
+        if password_reset_otp.verification_attempts >= 5:
+            delete_password_reset_otps(user)
+
+            raise PasswordResetOTPAttemptsExceededException()
+
         raise InvalidPasswordResetOTPException()
 
+    delete_password_reset_otps(user)
+
+    # Remove any previous reset tokens
+    delete_password_reset_tokens(user)
+
+    # Generate new reset token
+    raw_token, token_hash = generate_password_reset_token()
+
+    expires_at = timezone.now() + timedelta(minutes=15)
+
+    create_password_reset_token(
+        user=user,
+        token_hash=token_hash,
+        expires_at=expires_at,
+    )
+
     return {
-        "message": "Password reset OTP verified successfully."
+        "message": "OTP verified successfully.",
+        "reset_token": raw_token,
+    }
+
+
+def resend_password_reset_otp(email):
+    user = get_verified_user_by_email(email)
+
+    if not user:
+        raise InvalidCredentialsException()
+
+    latest_otp = get_latest_password_reset_otp(user)
+
+    if latest_otp:
+        cooldown_end = latest_otp.created_at + timedelta(seconds=60)
+
+        if timezone.now() < cooldown_end:
+            raise OTPResendTooSoonException()
+
+    # Delete previous OTP
+    delete_password_reset_otps(user)
+
+    # Generate new OTP
+    otp = generate_otp()
+
+    # Hash OTP before storing
+    otp_hash = make_password(otp)
+
+    # OTP expires after 5 minutes
+    expires_at = timezone.now() + timedelta(minutes=5)
+
+    create_password_reset_otp(
+        user=user,
+        otp_hash=otp_hash,
+        expires_at=expires_at,
+    )
+
+    # Send raw OTP to email
+    send_password_reset_otp_email(
+        email=user.email,
+        otp=otp,
+    )
+
+    return {
+        "message": "A new password reset OTP has been sent."
+    }
+
+
+def generate_password_reset_token():
+    raw_token = secrets.token_urlsafe(32)
+
+    token_hash = hashlib.sha256(
+        raw_token.encode()
+    ).hexdigest()
+
+    return raw_token, token_hash
+
+
+def reset_password(reset_token, new_password):
+
+    token_hash = hashlib.sha256(
+        reset_token.encode()
+    ).hexdigest()
+
+    token = get_password_reset_token(token_hash)
+
+    if not token:
+        raise InvalidPasswordResetTokenException()
+
+    if token.expires_at <= timezone.now():
+        raise PasswordResetTokenExpiredException()
+
+    user = token.user
+
+    user.set_password(new_password)
+    user.save(update_fields=["password"])
+
+    # Make token single-use
+    token.used_at = timezone.now()
+    token.save(update_fields=["used_at"])
+
+    # Remove any other reset tokens
+    delete_password_reset_tokens(user)
+
+    return {
+        "message": "Password reset successfully."
     }
