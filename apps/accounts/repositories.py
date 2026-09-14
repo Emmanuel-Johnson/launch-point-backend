@@ -100,3 +100,29 @@ def delete_password_reset_tokens(user):
     PasswordResetToken.objects.filter(
         user=user
     ).delete()
+
+
+def get_user_by_google_id(google_id):
+    return User.objects.filter(
+        google_id=google_id
+    ).first()
+
+
+def create_google_user(
+    *,
+    full_name,
+    email,
+    google_id,
+):
+    user = User(
+        full_name=full_name,
+        email=email,
+        google_id=google_id,
+        email_verified=True,
+        is_active=True,
+    )
+
+    user.set_unusable_password()
+    user.save()
+
+    return user

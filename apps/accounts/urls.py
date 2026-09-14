@@ -10,6 +10,7 @@ from .views import (
     VerifyPasswordResetOTPView,
     ResendPasswordResetOTPView,
     ResetPasswordView,
+    GoogleAuthenticationView,
 )
 
 
@@ -67,6 +68,12 @@ urlpatterns = [
         "token/refresh/",
         TokenRefreshView.as_view(),
         name="token-refresh",
+    ),
+
+    path(
+        "google/",
+        GoogleAuthenticationView.as_view(),
+        name="google-authentication",
     ),
 
     path(
