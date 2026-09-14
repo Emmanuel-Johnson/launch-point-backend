@@ -77,3 +77,9 @@ class PasswordResetTokenExpiredException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "Password reset token has expired."
     default_code = "password_reset_token_expired"
+
+
+class InvalidGoogleTokenException(APIException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    default_detail = "Invalid Google authentication."
+    default_code = "invalid_google_token"

@@ -13,6 +13,7 @@ from .serializers import (
     VerifyPasswordResetOTPSerializer,
     ResendPasswordResetOTPSerializer,
     ResetPasswordSerializer,
+    GoogleAuthenticationSerializer,
 )
 from .services import (
     signup_user,
@@ -23,6 +24,7 @@ from .services import (
     verify_password_reset_otp,
     resend_password_reset_otp,
     reset_password,
+    google_authenticate,
 )
 
 
@@ -191,6 +193,29 @@ class ResetPasswordView(APIView):
             new_password=serializer.validated_data[
                 "new_password"
             ],
+        )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )
+
+
+class GoogleAuthenticationView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+
+        serializer = GoogleAuthenticationSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        result = google_authenticate(
+            serializer.validated_data["id_token"]
         )
 
         return Response(

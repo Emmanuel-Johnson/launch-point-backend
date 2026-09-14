@@ -135,3 +135,10 @@ class ResetPasswordSerializer(serializers.Serializer):
 
     def validate_new_password(self, value):
         return validate_password(value)
+
+
+class GoogleAuthenticationSerializer(serializers.Serializer):
+    id_token = serializers.CharField(
+        required=True,
+        allow_blank=False,
+    )

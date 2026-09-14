@@ -59,6 +59,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=255
     )
 
+    google_id = models.CharField(
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+    )
+
     email_verified = models.BooleanField(
         default=False
     )

@@ -33,6 +33,8 @@ from .repositories import (
     create_password_reset_token,
     get_password_reset_token,
     delete_password_reset_tokens,
+    get_user_by_google_id,
+    create_google_user,
 )
 from .utils import (
     generate_otp,
@@ -42,6 +44,10 @@ from .utils import (
 from rest_framework_simplejwt.tokens import RefreshToken
 import hashlib
 import secrets
+from django.conf import settings
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from .exceptions import InvalidGoogleTokenException
 
 
 def generate_tokens_for_user(user):
@@ -430,4 +436,120 @@ def reset_password(reset_token, new_password):
 
     return {
         "message": "Password reset successfully."
+    }
+
+
+def google_authenticate(id_token_string):
+
+    try:
+        # Verify the ID token sent by the frontend.
+        # This checks that the token is valid and was issued
+        # for your Google Client ID.
+        idinfo = id_token.verify_oauth2_token(
+            id_token_string,
+            requests.Request(),
+            settings.GOOGLE_CLIENT_ID,
+        )
+
+    except ValueError:
+        raise InvalidGoogleTokenException()
+
+    # Get information from the verified Google ID token
+    google_id = idinfo.get("sub")
+    email = idinfo.get("email")
+    email_verified = idinfo.get("email_verified")
+    full_name = idinfo.get("name")
+
+    # Basic validation
+    if not google_id or not email:
+        raise InvalidGoogleTokenException()
+
+    if not email_verified:
+        raise InvalidGoogleTokenException()
+
+    # Normalize email
+    email = email.lower()
+
+    # ---------------------------------------------------------
+    # 1. Check whether this Google account already exists
+    # ---------------------------------------------------------
+
+    user = get_user_by_google_id(google_id)
+
+    if user:
+
+        # Google account already linked to this user.
+        # Just log them in.
+        if not user.is_active:
+            raise InvalidGoogleTokenException()
+
+    else:
+
+        # ---------------------------------------------------------
+        # 2. Google account does not exist yet.
+        #    Check whether the email already belongs to a user.
+        # ---------------------------------------------------------
+
+        user = get_verified_user_by_email(email)
+
+        if user:
+
+            # -------------------------------------------------
+            # Existing normal email/password account
+            # -------------------------------------------------
+            #
+            # Link this Google account to the existing user.
+            #
+            # Example:
+            #
+            # Before:
+            # email = john@gmail.com
+            # google_id = None
+            #
+            # After:
+            # email = john@gmail.com
+            # google_id = 123456789
+            #
+
+            if user.google_id and user.google_id != google_id:
+                # This email is already linked to a different
+                # Google account.
+                raise InvalidGoogleTokenException()
+
+            user.google_id = google_id
+            user.save(update_fields=["google_id"])
+
+        else:
+
+            # -------------------------------------------------
+            # 3. Completely new user
+            # -------------------------------------------------
+
+            user = create_google_user(
+                full_name=full_name or email.split("@")[0],
+                email=email,
+                google_id=google_id,
+            )
+
+    # ---------------------------------------------------------
+    # 4. Check whether the account is active
+    # ---------------------------------------------------------
+
+    if not user.is_active:
+        raise InvalidGoogleTokenException()
+
+    # ---------------------------------------------------------
+    # 5. Generate your application's JWT tokens
+    # ---------------------------------------------------------
+
+    tokens = generate_tokens_for_user(user)
+
+    return {
+        "message": "Google authentication successful.",
+        "user": {
+            "id": user.id,
+            "full_name": user.full_name,
+            "email": user.email,
+        },
+        "tokens": tokens,
     }

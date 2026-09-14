@@ -117,6 +117,7 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": False,
 }
 
+GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID")
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
