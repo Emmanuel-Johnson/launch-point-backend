@@ -264,7 +264,9 @@ def forgot_password(email):
     user = get_verified_user_by_email(email)
 
     if not user:
-        raise InvalidCredentialsException()
+        return {
+            "message": "If an account exists for this email, a password reset OTP has been sent."
+        }
 
     # Delete any previous password reset OTPs
     delete_password_reset_otps(user)
@@ -291,7 +293,7 @@ def forgot_password(email):
     )
 
     return {
-        "message": "A password reset OTP has been sent."
+        "message": "If an account exists for this email, a password reset OTP has been sent."
     }
 
 
