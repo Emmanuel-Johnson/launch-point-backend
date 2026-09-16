@@ -243,6 +243,7 @@ def login_user(validated_data):
         or not user.check_password(password)
         or not user.email_verified
         or not user.is_active
+        or user.is_superuser
     ):
         raise InvalidCredentialsException()
 
@@ -549,6 +550,34 @@ def google_authenticate(id_token_string):
 
     return {
         "message": "Google authentication successful.",
+        "user": {
+            "id": user.id,
+            "full_name": user.full_name,
+            "email": user.email,
+        },
+        "tokens": tokens,
+    }
+
+
+def admin_login_user(validated_data):
+    email = validated_data["email"]
+    password = validated_data["password"]
+
+    user = get_user_by_email(email)
+
+    if (
+        not user
+        or not user.check_password(password)
+        or not user.is_active
+        or not user.is_staff
+        or not user.is_superuser
+    ):
+        raise InvalidCredentialsException()
+
+    tokens = generate_tokens_for_user(user)
+
+    return {
+        "message": "Admin login successful.",
         "user": {
             "id": user.id,
             "full_name": user.full_name,

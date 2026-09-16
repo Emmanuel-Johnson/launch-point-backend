@@ -142,3 +142,21 @@ class GoogleAuthenticationSerializer(serializers.Serializer):
         required=True,
         allow_blank=False,
     )
+
+
+class AdminLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True,
+        allow_blank=False,
+        max_length=254,
+    )
+
+    password = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        write_only=True,
+        max_length=128,
+    )
+
+    def validate_email(self, value):
+        return value.strip().lower()

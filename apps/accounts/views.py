@@ -14,6 +14,7 @@ from .serializers import (
     ResendPasswordResetOTPSerializer,
     ResetPasswordSerializer,
     GoogleAuthenticationSerializer,
+    AdminLoginSerializer,
 )
 from .services import (
     signup_user,
@@ -25,6 +26,7 @@ from .services import (
     resend_password_reset_otp,
     reset_password,
     google_authenticate,
+    admin_login_user,
 )
 
 
@@ -256,5 +258,27 @@ class LogoutView(APIView):
             {
                 "message": "Logout successful."
             },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = AdminLoginSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        result = admin_login_user(
+            serializer.validated_data
+        )
+
+        return Response(
+            result,
             status=status.HTTP_200_OK,
         )
