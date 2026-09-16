@@ -18,7 +18,7 @@ from .exceptions import (
     PasswordResetOTPAttemptsExceededException,
     InvalidPasswordResetTokenException,
     PasswordResetTokenExpiredException,
-
+    SamePasswordException,
 )
 from .repositories import (
     create_user,
@@ -422,6 +422,10 @@ def reset_password(reset_token, new_password):
         raise PasswordResetTokenExpiredException()
 
     user = token.user
+
+    # Prevent using the current password again
+    if user.check_password(new_password):
+        raise SamePasswordException()
 
     user.set_password(new_password)
     user.save(update_fields=["password"])

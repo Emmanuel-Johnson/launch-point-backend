@@ -83,3 +83,9 @@ class InvalidGoogleTokenException(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_detail = "Invalid Google authentication."
     default_code = "invalid_google_token"
+
+class SamePasswordException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "New password must be different from your current password."
+    default_code = "same_password"
+    
