@@ -237,16 +237,13 @@ def login_user(validated_data):
     # Find user
     user = get_user_by_email(email)
 
-    # Check credentials
-    if not user or not user.check_password(password):
-        raise InvalidCredentialsException()
-
-    # Email must be verified
-    if not user.email_verified:
-        raise EmailNotVerifiedException()
-
-    # User must be active
-    if not user.is_active:
+    # Check credentials and verification status
+    if (
+        not user
+        or not user.check_password(password)
+        or not user.email_verified
+        or not user.is_active
+    ):
         raise InvalidCredentialsException()
 
     # Generate JWT tokens
