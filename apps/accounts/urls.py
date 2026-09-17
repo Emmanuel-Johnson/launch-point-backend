@@ -12,6 +12,7 @@ from .views import (
     ResetPasswordView,
     GoogleAuthenticationView,
     AdminLoginView,
+    AdminLogoutView,
 )
 
 
@@ -87,5 +88,11 @@ urlpatterns = [
         "admin/login/",
         AdminLoginView.as_view(),
         name="admin-login",
+    ),
+
+    path(
+        "admin/logout/",
+        AdminLogoutView.as_view(),
+        name="admin-logout",
     ),
 ]
