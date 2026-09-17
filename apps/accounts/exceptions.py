@@ -55,18 +55,6 @@ class PasswordResetOTPExpiredException(APIException):
     default_code = "password_reset_otp_expired"
 
 
-class OTPVerificationAttemptsExceededException(APIException):
-    status_code = 400
-    default_detail = "Too many incorrect attempts. Please request a new OTP."
-    default_code = "otp_verification_attempts_exceeded"
-
-
-class PasswordResetOTPAttemptsExceededException(APIException):
-    status_code = 400
-    default_detail = "Too many incorrect attempts. Please request a new OTP."
-    default_code = "password_reset_otp_attempts_exceeded"
-
-
 class InvalidPasswordResetTokenException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "Invalid password reset token."

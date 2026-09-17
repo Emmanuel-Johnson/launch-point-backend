@@ -23,7 +23,7 @@ def send_verification_email(email, otp):
             "To verify your email address, please use the following "
             f"one-time password (OTP):\n\n"
             f"Your OTP: {otp}\n\n"
-            "This OTP is valid for 5 minutes. For your security, "
+            "This OTP is valid for {settings.OTP_EXPIRY_MINUTES} minutes. For your security, "
             "please do not share this OTP with anyone.\n\n"
             "If you did not request this verification, you can safely "
             "ignore this email.\n\n"
@@ -48,7 +48,7 @@ Your password reset OTP is:
 
 {otp}
 
-This OTP is valid for 5 minutes. For your security, please do not share this OTP with anyone.
+This OTP is valid for {settings.OTP_EXPIRY_MINUTES} minutes. For your security, please do not share this OTP with anyone.
 
 If you did not request a password reset, you can safely ignore this email.
 
