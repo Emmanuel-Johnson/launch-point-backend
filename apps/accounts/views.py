@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from .permissions import IsAdminUser
 from .serializers import (
     SignupSerializer,
     VerifyEmailOTPSerializer,
@@ -14,6 +15,7 @@ from .serializers import (
     ResendPasswordResetOTPSerializer,
     ResetPasswordSerializer,
     GoogleAuthenticationSerializer,
+    AdminLoginSerializer,
 )
 from .services import (
     signup_user,
@@ -25,6 +27,7 @@ from .services import (
     resend_password_reset_otp,
     reset_password,
     google_authenticate,
+    admin_login_user,
 )
 
 
@@ -255,6 +258,62 @@ class LogoutView(APIView):
         return Response(
             {
                 "message": "Logout successful."
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = AdminLoginSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        result = admin_login_user(
+            serializer.validated_data
+        )
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminLogoutView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        refresh_token = request.data.get("admin_refresh")
+
+        if not refresh_token:
+            return Response(
+                {
+                    "detail": "Refresh token is required."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+        except TokenError:
+            return Response(
+                {
+                    "detail": "Invalid or expired refresh token."
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        return Response(
+            {
+                "message": "Admin logout successful."
             },
             status=status.HTTP_200_OK,
         )
