@@ -89,7 +89,7 @@ def signup_user(validated_data):
     otp_hash = make_password(otp)
 
     # OTP expires after 5 minutes
-    expires_at = timezone.now() + timedelta(minutes=5)
+    expires_at = timezone.now() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
 
     # Store hashed OTP
     create_email_verification_otp(
@@ -152,7 +152,7 @@ def verify_email_otp(email, otp):
         )
 
         # Maximum 5 wrong attempts
-        if verification_otp.verification_attempts >= 5:
+        if verification_otp.verification_attempts >= settings.OTP_MAX_ATTEMPTS:
             delete_email_verification_otps(user)
             raise OTPVerificationAttemptsExceededException()
 
@@ -196,7 +196,7 @@ def resend_verification_otp(email):
     latest_otp = get_latest_email_verification_otp(user)
 
     if latest_otp:
-        cooldown_end = latest_otp.created_at + timedelta(seconds=60)
+        cooldown_end = latest_otp.created_at + timedelta(seconds=settings.OTP_RESEND_COOLDOWN_SECONDS)
 
         if timezone.now() < cooldown_end:
             raise OTPResendTooSoonException()
@@ -211,7 +211,7 @@ def resend_verification_otp(email):
     otp_hash = make_password(otp)
 
     # OTP expires after 5 minutes
-    expires_at = timezone.now() + timedelta(minutes=5)
+    expires_at = timezone.now() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
 
     create_email_verification_otp(
         user=user,
@@ -279,7 +279,7 @@ def forgot_password(email):
     otp_hash = make_password(otp)
 
     # OTP expires after 5 minutes
-    expires_at = timezone.now() + timedelta(minutes=5)
+    expires_at = timezone.now() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
 
     create_password_reset_otp(
         user=user,
@@ -326,7 +326,7 @@ def verify_password_reset_otp(email, otp):
         )
 
         # Maximum 5 wrong attempts
-        if password_reset_otp.verification_attempts >= 5:
+        if password_reset_otp.verification_attempts >= settings.OTP_MAX_ATTEMPTS:
             delete_password_reset_otps(user)
 
             raise PasswordResetOTPAttemptsExceededException()
@@ -341,7 +341,7 @@ def verify_password_reset_otp(email, otp):
     # Generate new reset token
     raw_token, token_hash = generate_password_reset_token()
 
-    expires_at = timezone.now() + timedelta(minutes=15)
+    expires_at = timezone.now() + timedelta(minutes=settings.PASSWORD_RESET_TOKEN_EXPIRY_MINUTES)
 
     create_password_reset_token(
         user=user,
@@ -364,7 +364,7 @@ def resend_password_reset_otp(email):
     latest_otp = get_latest_password_reset_otp(user)
 
     if latest_otp:
-        cooldown_end = latest_otp.created_at + timedelta(seconds=60)
+        cooldown_end = latest_otp.created_at + timedelta(seconds=settings.OTP_RESEND_COOLDOWN_SECONDS)
 
         if timezone.now() < cooldown_end:
             raise OTPResendTooSoonException()
@@ -379,7 +379,7 @@ def resend_password_reset_otp(email):
     otp_hash = make_password(otp)
 
     # OTP expires after 5 minutes
-    expires_at = timezone.now() + timedelta(minutes=5)
+    expires_at = timezone.now() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
 
     create_password_reset_otp(
         user=user,
