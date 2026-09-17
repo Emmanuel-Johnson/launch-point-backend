@@ -14,8 +14,6 @@ from .exceptions import (
     OTPResendTooSoonException,
     InvalidPasswordResetOTPException,
     PasswordResetOTPExpiredException,
-    OTPVerificationAttemptsExceededException,
-    PasswordResetOTPAttemptsExceededException,
     InvalidPasswordResetTokenException,
     PasswordResetTokenExpiredException,
     SamePasswordException,
@@ -135,30 +133,18 @@ def verify_email_otp(email, otp):
     if not verification_otp:
         raise InvalidEmailVerificationOTPException()
 
-    # Check OTP expiry
-    if timezone.now() > verification_otp.expires_at:
-        raise EmailVerificationOTPExpiredException()
-
     # Compare entered OTP with hashed OTP
     if not check_password(
         otp,
         verification_otp.otp_hash,
     ):
-        # Count only wrong OTP attempts
-        verification_otp.verification_attempts += 1
-
-        verification_otp.save(
-            update_fields=["verification_attempts"]
-        )
-
-        # Maximum 5 wrong attempts
-        if verification_otp.verification_attempts >= settings.OTP_MAX_ATTEMPTS:
-            delete_email_verification_otps(user)
-            raise OTPVerificationAttemptsExceededException()
-
         raise InvalidEmailVerificationOTPException()
 
-    # OTP is correct
+    # OTP is correct, now check expiry
+    if timezone.now() >= verification_otp.expires_at:
+        raise EmailVerificationOTPExpiredException()
+
+    # OTP is correct and valid
     user.email_verified = True
 
     user.save(
@@ -309,39 +295,27 @@ def verify_password_reset_otp(email, otp):
     if not password_reset_otp:
         raise InvalidPasswordResetOTPException()
 
-    # Check OTP expiry
-    if timezone.now() > password_reset_otp.expires_at:
-        raise PasswordResetOTPExpiredException()
-
-    # Check OTP
+    # Check OTP first
     if not check_password(
         otp,
         password_reset_otp.otp_hash,
     ):
-        # Count only wrong attempts
-        password_reset_otp.verification_attempts += 1
-
-        password_reset_otp.save(
-            update_fields=["verification_attempts"]
-        )
-
-        # Maximum 5 wrong attempts
-        if password_reset_otp.verification_attempts >= settings.OTP_MAX_ATTEMPTS:
-            delete_password_reset_otps(user)
-
-            raise PasswordResetOTPAttemptsExceededException()
-
         raise InvalidPasswordResetOTPException()
 
+    # OTP is correct, now check expiry
+    if timezone.now() >= password_reset_otp.expires_at:
+        raise PasswordResetOTPExpiredException()
+
+    # OTP is correct and valid
     delete_password_reset_otps(user)
 
-    # Remove any previous reset tokens
     delete_password_reset_tokens(user)
 
-    # Generate new reset token
     raw_token, token_hash = generate_password_reset_token()
 
-    expires_at = timezone.now() + timedelta(minutes=settings.PASSWORD_RESET_TOKEN_EXPIRY_MINUTES)
+    expires_at = timezone.now() + timedelta(
+        minutes=settings.PASSWORD_RESET_TOKEN_EXPIRY_MINUTES
+    )
 
     create_password_reset_token(
         user=user,
