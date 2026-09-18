@@ -42,6 +42,10 @@ from .repositories import (
     get_user_by_email,
     get_user_by_google_id,
     get_verified_user_by_email,
+    link_google_account,
+    mark_password_reset_token_used,
+    update_user_password,
+    verify_user_email,
 )
 from .utils import (
     generate_otp,
@@ -169,18 +173,11 @@ def verify_email_otp(email, otp):
         raise EmailVerificationOTPExpiredException()
 
     # OTP is correct and valid
-    user.email_verified = True
+    verify_user_email(user)
 
     logger.info(
         "Email verified successfully user_id=%s",
         user.id,
-    )
-
-    user.save(
-        update_fields=[
-            "email_verified",
-            "updated_at",
-        ]
     )
 
     # Delete OTP after successful verification
@@ -501,12 +498,10 @@ def reset_password(reset_token, new_password):
         )
         raise SamePasswordException()
 
-    user.set_password(new_password)
-    user.save(update_fields=["password"])
+    update_user_password(user, new_password)
 
     # Make token single-use
-    token.used_at = timezone.now()
-    token.save(update_fields=["used_at"])
+    mark_password_reset_token_used(token)
 
     # Remove any other reset tokens
     delete_password_reset_tokens(user)
@@ -609,8 +604,7 @@ def google_authenticate(id_token_string):
                 )
                 raise InvalidGoogleTokenException()
 
-            user.google_id = google_id
-            user.save(update_fields=["google_id"])
+            link_google_account(user, google_id)
 
             logger.info(
                 "Google account linked to existing user user_id=%s",
