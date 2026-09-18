@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚀 Launch Point — Backend
+# 🎓 Launch Point — Backend
 
 ### Secure, layered authentication API for a subscription-based Learning Management System
 
