@@ -1,11 +1,21 @@
+import logging
+
+from django.db import DatabaseError
+
 from .models import EmailVerificationOTP, PasswordResetOTP, PasswordResetToken, User
+
+logger = logging.getLogger(__name__)
 
 
 def create_user(**validated_data):
     """
     Create and return a new user.
     """
-    return User.objects.create_user(**validated_data)
+    try:
+        return User.objects.create_user(**validated_data)
+    except DatabaseError:
+        logger.exception("Database error while creating user")
+        raise
 
 
 def get_user_by_email(email):
@@ -26,11 +36,18 @@ def create_email_verification_otp(user, otp_hash, expires_at):
     """
     Create and return a new email verification OTP.
     """
-    return EmailVerificationOTP.objects.create(
-        user=user,
-        otp_hash=otp_hash,
-        expires_at=expires_at,
-    )
+    try:
+        return EmailVerificationOTP.objects.create(
+            user=user,
+            otp_hash=otp_hash,
+            expires_at=expires_at,
+        )
+    except DatabaseError:
+        logger.exception(
+            "Database error while creating email verification OTP user_id=%s",
+            user.id,
+        )
+        raise
 
 
 def get_latest_email_verification_otp(user):
@@ -46,15 +63,29 @@ def delete_email_verification_otps(user):
     """
     Delete all existing OTPs for the given user.
     """
-    EmailVerificationOTP.objects.filter(user=user).delete()
+    try:
+        EmailVerificationOTP.objects.filter(user=user).delete()
+    except DatabaseError:
+        logger.exception(
+            "Database error while deleting email verification OTPs user_id=%s",
+            user.id,
+        )
+        raise
 
 
 def create_password_reset_otp(user, otp_hash, expires_at):
-    return PasswordResetOTP.objects.create(
-        user=user,
-        otp_hash=otp_hash,
-        expires_at=expires_at,
-    )
+    try:
+        return PasswordResetOTP.objects.create(
+            user=user,
+            otp_hash=otp_hash,
+            expires_at=expires_at,
+        )
+    except DatabaseError:
+        logger.exception(
+            "Database error while creating password reset OTP user_id=%s",
+            user.id,
+        )
+        raise
 
 
 def get_latest_password_reset_otp(user):
@@ -62,7 +93,14 @@ def get_latest_password_reset_otp(user):
 
 
 def delete_password_reset_otps(user):
-    PasswordResetOTP.objects.filter(user=user).delete()
+    try:
+        PasswordResetOTP.objects.filter(user=user).delete()
+    except DatabaseError:
+        logger.exception(
+            "Database error while deleting password reset OTPs user_id=%s",
+            user.id,
+        )
+        raise
 
 
 def create_password_reset_token(
@@ -70,11 +108,18 @@ def create_password_reset_token(
     token_hash,
     expires_at,
 ):
-    return PasswordResetToken.objects.create(
-        user=user,
-        token_hash=token_hash,
-        expires_at=expires_at,
-    )
+    try:
+        return PasswordResetToken.objects.create(
+            user=user,
+            token_hash=token_hash,
+            expires_at=expires_at,
+        )
+    except DatabaseError:
+        logger.exception(
+            "Database error while creating password reset token user_id=%s",
+            user.id,
+        )
+        raise
 
 
 def get_password_reset_token(token_hash):
@@ -89,7 +134,14 @@ def get_password_reset_token(token_hash):
 
 
 def delete_password_reset_tokens(user):
-    PasswordResetToken.objects.filter(user=user).delete()
+    try:
+        PasswordResetToken.objects.filter(user=user).delete()
+    except DatabaseError:
+        logger.exception(
+            "Database error while deleting password reset tokens user_id=%s",
+            user.id,
+        )
+        raise
 
 
 def get_user_by_google_id(google_id):
@@ -111,6 +163,11 @@ def create_google_user(
     )
 
     user.set_unusable_password()
-    user.save()
+
+    try:
+        user.save()
+    except DatabaseError:
+        logger.exception("Database error while creating Google user")
+        raise
 
     return user

@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -31,11 +33,15 @@ from .services import (
     verify_password_reset_otp,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class SignupView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        logger.info("Signup request received")
+
         serializer = SignupSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
@@ -52,6 +58,8 @@ class VerifyEmailOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        logger.info("Email verification request received")
+
         serializer = VerifyEmailOTPSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
@@ -71,6 +79,8 @@ class ResendEmailVerificationOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        logger.info("Verification OTP resend request received")
+
         serializer = ResendEmailVerificationOTPSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
@@ -84,6 +94,8 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        logger.info("Login request received")
+
         serializer = LoginSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
@@ -100,6 +112,8 @@ class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        logger.info("Forgot password request received")
+
         serializer = ForgotPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -115,6 +129,8 @@ class VerifyPasswordResetOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        logger.info("Password reset OTP verification request received")
+
         serializer = VerifyPasswordResetOTPSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
@@ -134,6 +150,8 @@ class ResendPasswordResetOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        logger.info("Password reset OTP resend request received")
+
         serializer = ResendPasswordResetOTPSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
@@ -147,6 +165,7 @@ class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        logger.info("Reset password request received")
 
         serializer = ResetPasswordSerializer(data=request.data)
 
@@ -167,6 +186,7 @@ class GoogleAuthenticationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        logger.info("Google authentication request received")
 
         serializer = GoogleAuthenticationSerializer(data=request.data)
 
@@ -184,10 +204,15 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        logger.info("Logout request received user_id=%s", request.user.id)
 
         refresh_token = request.data.get("refresh")
 
         if not refresh_token:
+            logger.warning(
+                "Logout failed: refresh token missing user_id=%s",
+                request.user.id,
+            )
             return Response(
                 {"detail": "Refresh token is required."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -199,10 +224,16 @@ class LogoutView(APIView):
             token.blacklist()
 
         except TokenError:
+            logger.warning(
+                "Logout failed: invalid or expired refresh token user_id=%s",
+                request.user.id,
+            )
             return Response(
                 {"detail": "Invalid or expired refresh token."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+
+        logger.info("Logout successful user_id=%s", request.user.id)
 
         return Response(
             {"message": "Logout successful."},
@@ -214,6 +245,8 @@ class AdminLoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        logger.info("Admin login request received")
+
         serializer = AdminLoginSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
@@ -230,9 +263,15 @@ class AdminLogoutView(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request):
+        logger.info("Admin logout request received user_id=%s", request.user.id)
+
         refresh_token = request.data.get("admin_refresh")
 
         if not refresh_token:
+            logger.warning(
+                "Admin logout failed: refresh token missing user_id=%s",
+                request.user.id,
+            )
             return Response(
                 {"detail": "Refresh token is required."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -243,10 +282,16 @@ class AdminLogoutView(APIView):
             token.blacklist()
 
         except TokenError:
+            logger.warning(
+                "Admin logout failed: invalid or expired refresh token user_id=%s",
+                request.user.id,
+            )
             return Response(
                 {"detail": "Invalid or expired refresh token."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+
+        logger.info("Admin logout successful user_id=%s", request.user.id)
 
         return Response(
             {"message": "Admin logout successful."},
