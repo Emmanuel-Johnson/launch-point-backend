@@ -1,4 +1,4 @@
-from .models import User, EmailVerificationOTP, PasswordResetOTP, PasswordResetToken
+from .models import EmailVerificationOTP, PasswordResetOTP, PasswordResetToken, User
 
 
 def create_user(**validated_data):
@@ -37,18 +37,16 @@ def get_latest_email_verification_otp(user):
     """
     Return the latest OTP for the given user, or None if not found.
     """
-    return EmailVerificationOTP.objects.filter(
-        user=user
-    ).order_by("-created_at").first()
+    return (
+        EmailVerificationOTP.objects.filter(user=user).order_by("-created_at").first()
+    )
 
 
 def delete_email_verification_otps(user):
     """
     Delete all existing OTPs for the given user.
     """
-    EmailVerificationOTP.objects.filter(
-        user=user
-    ).delete()
+    EmailVerificationOTP.objects.filter(user=user).delete()
 
 
 def create_password_reset_otp(user, otp_hash, expires_at):
@@ -60,12 +58,7 @@ def create_password_reset_otp(user, otp_hash, expires_at):
 
 
 def get_latest_password_reset_otp(user):
-    return (
-        PasswordResetOTP.objects
-        .filter(user=user)
-        .order_by("-created_at")
-        .first()
-    )
+    return PasswordResetOTP.objects.filter(user=user).order_by("-created_at").first()
 
 
 def delete_password_reset_otps(user):
@@ -86,8 +79,7 @@ def create_password_reset_token(
 
 def get_password_reset_token(token_hash):
     return (
-        PasswordResetToken.objects
-        .filter(
+        PasswordResetToken.objects.filter(
             token_hash=token_hash,
             used_at__isnull=True,
         )
@@ -97,15 +89,11 @@ def get_password_reset_token(token_hash):
 
 
 def delete_password_reset_tokens(user):
-    PasswordResetToken.objects.filter(
-        user=user
-    ).delete()
+    PasswordResetToken.objects.filter(user=user).delete()
 
 
 def get_user_by_google_id(google_id):
-    return User.objects.filter(
-        google_id=google_id
-    ).first()
+    return User.objects.filter(google_id=google_id).first()
 
 
 def create_google_user(

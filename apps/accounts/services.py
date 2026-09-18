@@ -1,52 +1,53 @@
+import hashlib
+import logging
+import secrets
 from datetime import timedelta
-from django.utils import timezone
+
+from django.conf import settings
 from django.contrib.auth.hashers import (
     check_password,
     make_password,
 )
+from django.utils import timezone
+from google.auth.transport import requests
+from google.oauth2 import id_token
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from .exceptions import (
     EmailAlreadyExistsException,
+    EmailAlreadyVerifiedException,
+    EmailVerificationOTPExpiredException,
     InvalidCredentialsException,
     InvalidEmailVerificationOTPException,
-    EmailVerificationOTPExpiredException,
-    EmailAlreadyVerifiedException,
-    EmailNotVerifiedException,
-    OTPResendTooSoonException,
+    InvalidGoogleTokenException,
     InvalidPasswordResetOTPException,
-    PasswordResetOTPExpiredException,
     InvalidPasswordResetTokenException,
+    OTPResendTooSoonException,
+    PasswordResetOTPExpiredException,
     PasswordResetTokenExpiredException,
     SamePasswordException,
 )
 from .repositories import (
-    create_user,
-    get_user_by_email,
-    get_verified_user_by_email,
     create_email_verification_otp,
-    get_latest_email_verification_otp,
-    delete_email_verification_otps,
-    create_password_reset_otp,
-    delete_password_reset_otps,
-    get_latest_password_reset_otp,
-    create_password_reset_token,
-    get_password_reset_token,
-    delete_password_reset_tokens,
-    get_user_by_google_id,
     create_google_user,
+    create_password_reset_otp,
+    create_password_reset_token,
+    create_user,
+    delete_email_verification_otps,
+    delete_password_reset_otps,
+    delete_password_reset_tokens,
+    get_latest_email_verification_otp,
+    get_latest_password_reset_otp,
+    get_password_reset_token,
+    get_user_by_email,
+    get_user_by_google_id,
+    get_verified_user_by_email,
 )
 from .utils import (
     generate_otp,
-    send_verification_email,
     send_password_reset_otp_email,
+    send_verification_email,
 )
-from rest_framework_simplejwt.tokens import RefreshToken
-import hashlib
-import secrets
-from django.conf import settings
-from google.oauth2 import id_token
-from google.auth.transport import requests
-from .exceptions import InvalidGoogleTokenException
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -111,10 +112,7 @@ def signup_user(validated_data):
     )
 
     return {
-        "message": (
-            "Account created successfully. "
-            "Please verify your email."
-        ),
+        "message": ("Account created successfully. Please verify your email."),
         "user": {
             "id": user.id,
             "full_name": user.full_name,
@@ -209,7 +207,9 @@ def resend_verification_otp(email):
     latest_otp = get_latest_email_verification_otp(user)
 
     if latest_otp:
-        cooldown_end = latest_otp.created_at + timedelta(seconds=settings.OTP_RESEND_COOLDOWN_SECONDS)
+        cooldown_end = latest_otp.created_at + timedelta(
+            seconds=settings.OTP_RESEND_COOLDOWN_SECONDS
+        )
 
         if timezone.now() < cooldown_end:
             raise OTPResendTooSoonException()
@@ -238,9 +238,7 @@ def resend_verification_otp(email):
         otp=otp,
     )
 
-    return {
-        "message": "A new verification OTP has been sent."
-    }
+    return {"message": "A new verification OTP has been sent."}
 
 
 def login_user(validated_data):
@@ -285,11 +283,12 @@ def forgot_password(email):
     user = get_verified_user_by_email(email)
 
     if not user:
-        logger.info(
-            "Password reset requested for non-existing email"
-        )
+        logger.info("Password reset requested for non-existing email")
         return {
-            "message": "If an account exists for this email, a password reset OTP has been sent."
+            "message": (
+                "If an account exists for this email, "
+                "a password reset OTP has been sent."
+            )
         }
 
     # Delete any previous password reset OTPs
@@ -322,7 +321,9 @@ def forgot_password(email):
     )
 
     return {
-        "message": "If an account exists for this email, a password reset OTP has been sent."
+        "message": (
+            "If an account exists for this email, a password reset OTP has been sent."
+        )
     }
 
 
@@ -380,7 +381,9 @@ def resend_password_reset_otp(email):
     latest_otp = get_latest_password_reset_otp(user)
 
     if latest_otp:
-        cooldown_end = latest_otp.created_at + timedelta(seconds=settings.OTP_RESEND_COOLDOWN_SECONDS)
+        cooldown_end = latest_otp.created_at + timedelta(
+            seconds=settings.OTP_RESEND_COOLDOWN_SECONDS
+        )
 
         if timezone.now() < cooldown_end:
             raise OTPResendTooSoonException()
@@ -409,17 +412,13 @@ def resend_password_reset_otp(email):
         otp=otp,
     )
 
-    return {
-        "message": "A new password reset OTP has been sent."
-    }
+    return {"message": "A new password reset OTP has been sent."}
 
 
 def generate_password_reset_token():
     raw_token = secrets.token_urlsafe(32)
 
-    token_hash = hashlib.sha256(
-        raw_token.encode()
-    ).hexdigest()
+    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
 
     return raw_token, token_hash
 
@@ -428,9 +427,7 @@ def reset_password(reset_token, new_password):
 
     logger.info("Password reset attempt")
 
-    token_hash = hashlib.sha256(
-        reset_token.encode()
-    ).hexdigest()
+    token_hash = hashlib.sha256(reset_token.encode()).hexdigest()
 
     token = get_password_reset_token(token_hash)
 
@@ -463,9 +460,7 @@ def reset_password(reset_token, new_password):
         user.id,
     )
 
-    return {
-        "message": "Password reset successfully."
-    }
+    return {"message": "Password reset successfully."}
 
 
 def google_authenticate(id_token_string):
@@ -509,14 +504,12 @@ def google_authenticate(id_token_string):
     user = get_user_by_google_id(google_id)
 
     if user:
-
         # Google account already linked to this user.
         # Just log them in.
         if not user.is_active:
             raise InvalidGoogleTokenException()
 
     else:
-
         # ---------------------------------------------------------
         # 2. Google account does not exist yet.
         #    Check whether the email already belongs to a user.
@@ -525,7 +518,6 @@ def google_authenticate(id_token_string):
         user = get_verified_user_by_email(email)
 
         if user:
-
             # -------------------------------------------------
             # Existing normal email/password account
             # -------------------------------------------------
@@ -552,7 +544,6 @@ def google_authenticate(id_token_string):
             user.save(update_fields=["google_id"])
 
         else:
-
             # -------------------------------------------------
             # 3. Completely new user
             # -------------------------------------------------
