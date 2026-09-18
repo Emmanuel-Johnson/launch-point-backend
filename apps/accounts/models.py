@@ -1,16 +1,16 @@
-from django.db import models
+import uuid
+
+from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser,
-    PermissionsMixin,
     BaseUserManager,
+    PermissionsMixin,
 )
+from django.db import models
 from django.utils import timezone
-from django.conf import settings
-import uuid
 
 
 class CustomUserManager(BaseUserManager):
-
     def create_user(self, email, password, **extra_fields):
         if not email:
             raise ValueError("Email is required")
@@ -20,10 +20,7 @@ class CustomUserManager(BaseUserManager):
 
         email = self.normalize_email(email)
 
-        user = self.model(
-            email=email,
-            **extra_fields
-        )
+        user = self.model(email=email, **extra_fields)
 
         user.set_password(password)
         user.save(using=self._db)
@@ -41,23 +38,13 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get("is_superuser") is not True:
             raise ValueError("Superuser must have is_superuser=True")
 
-        return self.create_user(
-            email=email,
-            password=password,
-            **extra_fields
-        )
+        return self.create_user(email=email, password=password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    full_name = models.CharField(max_length=150)
 
-    full_name = models.CharField(
-        max_length=150
-    )
-
-    email = models.EmailField(
-        unique=True,
-        max_length=255
-    )
+    email = models.EmailField(unique=True, max_length=255)
 
     google_id = models.CharField(
         max_length=255,
@@ -66,25 +53,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
     )
 
-    email_verified = models.BooleanField(
-        default=False
-    )
+    email_verified = models.BooleanField(default=False)
 
-    is_active = models.BooleanField(
-        default=True
-    )
+    is_active = models.BooleanField(default=True)
 
-    is_staff = models.BooleanField(
-        default=False
-    )
+    is_staff = models.BooleanField(default=False)
 
-    date_joined = models.DateTimeField(
-        default=timezone.now
-    )
+    date_joined = models.DateTimeField(default=timezone.now)
 
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = CustomUserManager()
 
@@ -102,22 +79,17 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class EmailVerificationOTP(models.Model):
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="email_verification_otps",
     )
 
-    otp_hash = models.CharField(
-        max_length=128
-    )
+    otp_hash = models.CharField(max_length=128)
 
     expires_at = models.DateTimeField()
 
-    created_at = models.DateTimeField(
-        default=timezone.now
-    )
+    created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         db_table = "email_verification_otps"
@@ -127,22 +99,17 @@ class EmailVerificationOTP(models.Model):
 
 
 class PasswordResetOTP(models.Model):
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="password_reset_otps",
     )
 
-    otp_hash = models.CharField(
-        max_length=128
-    )
+    otp_hash = models.CharField(max_length=128)
 
     expires_at = models.DateTimeField()
 
-    created_at = models.DateTimeField(
-        default=timezone.now
-    )
+    created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         db_table = "password_reset_otps"

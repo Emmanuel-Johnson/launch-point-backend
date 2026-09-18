@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from .validators import validate_full_name, validate_password
 
 
@@ -29,7 +30,6 @@ class SignupSerializer(serializers.Serializer):
 
 
 class VerifyEmailOTPSerializer(serializers.Serializer):
-
     email = serializers.EmailField(
         required=True,
     )
@@ -43,9 +43,7 @@ class VerifyEmailOTPSerializer(serializers.Serializer):
 
     def validate_otp(self, value):
         if not value.isdigit():
-            raise serializers.ValidationError(
-                "OTP must contain only numbers."
-            )
+            raise serializers.ValidationError("OTP must contain only numbers.")
 
         return value
 
@@ -105,9 +103,7 @@ class VerifyPasswordResetOTPSerializer(serializers.Serializer):
 
     def validate_otp(self, value):
         if not value.isdigit():
-            raise serializers.ValidationError(
-                "OTP must contain only digits."
-            )
+            raise serializers.ValidationError("OTP must contain only digits.")
 
         return value
 
@@ -123,7 +119,6 @@ class ResendPasswordResetOTPSerializer(serializers.Serializer):
 
 
 class ResetPasswordSerializer(serializers.Serializer):
-
     reset_token = serializers.CharField(
         required=True,
     )
