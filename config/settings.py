@@ -179,3 +179,39 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
 OTP_EXPIRY_MINUTES = 5
 OTP_RESEND_COOLDOWN_SECONDS = 60
 PASSWORD_RESET_TOKEN_EXPIRY_MINUTES = 15
+
+
+# Logging
+
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} | {levelname} | {name} | {message}",
+            "style": "{",
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": LOG_DIR / "django.log",
+            "formatter": "verbose",
+        },
+    },
+
+    "root": {
+        "handlers": ["console", "file"],
+        "level": "INFO",
+    },
+}
