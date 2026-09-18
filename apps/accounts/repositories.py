@@ -1,6 +1,7 @@
 import logging
 
 from django.db import DatabaseError
+from django.utils import timezone
 
 from .models import EmailVerificationOTP, PasswordResetOTP, PasswordResetToken, User
 
@@ -71,6 +72,16 @@ def delete_email_verification_otps(user):
             user.id,
         )
         raise
+
+
+def verify_user_email(user):
+    user.email_verified = True
+    user.save(
+        update_fields=[
+            "email_verified",
+            "updated_at",
+        ]
+    )
 
 
 def create_password_reset_otp(user, otp_hash, expires_at):
@@ -144,6 +155,16 @@ def delete_password_reset_tokens(user):
         raise
 
 
+def mark_password_reset_token_used(token):
+    token.used_at = timezone.now()
+    token.save(update_fields=["used_at"])
+
+
+def update_user_password(user, new_password):
+    user.set_password(new_password)
+    user.save(update_fields=["password"])
+
+
 def get_user_by_google_id(google_id):
     return User.objects.filter(google_id=google_id).first()
 
@@ -171,3 +192,8 @@ def create_google_user(
         raise
 
     return user
+
+
+def link_google_account(user, google_id):
+    user.google_id = google_id
+    user.save(update_fields=["google_id"])
