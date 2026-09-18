@@ -46,6 +46,9 @@ from django.conf import settings
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from .exceptions import InvalidGoogleTokenException
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def generate_tokens_for_user(user):
@@ -62,20 +65,25 @@ def signup_user(validated_data):
     email = validated_data["email"]
     password = validated_data["password"]
 
+    logger.info("Signup attempt for email=%s", email)
+
     # Check whether the email is already registered
     existing_user = get_user_by_email(email)
 
     if existing_user and existing_user.email_verified:
+        logger.warning("Signup rejected: email already exists email=%s", email)
         raise EmailAlreadyExistsException()
 
     if existing_user:
         user = existing_user
+        logger.info("Resuming signup for unverified user email=%s", email)
     else:
         user = create_user(
             full_name=full_name,
             email=email,
             password=password,
         )
+        logger.info("User created successfully user_id=%s", user.id)
 
     # Delete any existing OTPs for this user
     delete_email_verification_otps(user)
@@ -116,15 +124,21 @@ def signup_user(validated_data):
 
 
 def verify_email_otp(email, otp):
+    logger.info("Email verification attempt email=%s", email)
     # Find user by email
     user = get_user_by_email(email)
 
     # Do not reveal whether the email exists
     if not user:
+        logger.warning("Email verification failed: user not found")
         raise InvalidEmailVerificationOTPException()
 
     # Check whether email is already verified
     if user.email_verified:
+        logger.warning(
+            "Email verification rejected: already verified user_id=%s",
+            user.id,
+        )
         raise EmailAlreadyVerifiedException()
 
     # Get the latest OTP
@@ -138,14 +152,27 @@ def verify_email_otp(email, otp):
         otp,
         verification_otp.otp_hash,
     ):
+        logger.warning(
+            "Email verification failed: invalid OTP user_id=%s",
+            user.id,
+        )
         raise InvalidEmailVerificationOTPException()
 
     # OTP is correct, now check expiry
     if timezone.now() >= verification_otp.expires_at:
+        logger.warning(
+            "Email verification failed: expired OTP user_id=%s",
+            user.id,
+        )
         raise EmailVerificationOTPExpiredException()
 
     # OTP is correct and valid
     user.email_verified = True
+
+    logger.info(
+        "Email verified successfully user_id=%s",
+        user.id,
+    )
 
     user.save(
         update_fields=[
@@ -220,6 +247,8 @@ def login_user(validated_data):
     email = validated_data["email"]
     password = validated_data["password"]
 
+    logger.info("Login attempt email=%s", email)
+
     # Find user
     user = get_user_by_email(email)
 
@@ -231,10 +260,13 @@ def login_user(validated_data):
         or not user.is_active
         or user.is_superuser
     ):
+        logger.warning("Login failed email=%s", email)
         raise InvalidCredentialsException()
 
     # Generate JWT tokens
     tokens = generate_tokens_for_user(user)
+
+    logger.info("Login successful user_id=%s", user.id)
 
     return {
         "message": "Login successful.",
@@ -248,9 +280,14 @@ def login_user(validated_data):
 
 
 def forgot_password(email):
+    logger.info("Password reset requested email=%s", email)
+
     user = get_verified_user_by_email(email)
 
     if not user:
+        logger.info(
+            "Password reset requested for non-existing email"
+        )
         return {
             "message": "If an account exists for this email, a password reset OTP has been sent."
         }
@@ -260,6 +297,11 @@ def forgot_password(email):
 
     # Generate a new OTP
     otp = generate_otp()
+
+    logger.info(
+        "Password reset OTP generated user_id=%s",
+        user.id,
+    )
 
     # Hash the OTP before storing it
     otp_hash = make_password(otp)
@@ -384,6 +426,8 @@ def generate_password_reset_token():
 
 def reset_password(reset_token, new_password):
 
+    logger.info("Password reset attempt")
+
     token_hash = hashlib.sha256(
         reset_token.encode()
     ).hexdigest()
@@ -391,9 +435,11 @@ def reset_password(reset_token, new_password):
     token = get_password_reset_token(token_hash)
 
     if not token:
+        logger.warning("Password reset failed: invalid token")
         raise InvalidPasswordResetTokenException()
 
     if token.expires_at <= timezone.now():
+        logger.warning("Password reset failed: expired token")
         raise PasswordResetTokenExpiredException()
 
     user = token.user
@@ -412,12 +458,19 @@ def reset_password(reset_token, new_password):
     # Remove any other reset tokens
     delete_password_reset_tokens(user)
 
+    logger.info(
+        "Password reset successful user_id=%s",
+        user.id,
+    )
+
     return {
         "message": "Password reset successfully."
     }
 
 
 def google_authenticate(id_token_string):
+
+    logger.info("Google authentication attempt")
 
     try:
         # Verify the ID token sent by the frontend.
@@ -430,6 +483,7 @@ def google_authenticate(id_token_string):
         )
 
     except ValueError:
+        logger.warning("Google authentication failed: invalid token")
         raise InvalidGoogleTokenException()
 
     # Get information from the verified Google ID token
@@ -509,6 +563,11 @@ def google_authenticate(id_token_string):
                 google_id=google_id,
             )
 
+            logger.info(
+                "Google user created successfully user_id=%s",
+                user.id,
+            )
+
     # ---------------------------------------------------------
     # 4. Check whether the account is active
     # ---------------------------------------------------------
@@ -521,6 +580,11 @@ def google_authenticate(id_token_string):
     # ---------------------------------------------------------
 
     tokens = generate_tokens_for_user(user)
+
+    logger.info(
+        "Google authentication successful user_id=%s",
+        user.id,
+    )
 
     return {
         "message": "Google authentication successful.",
