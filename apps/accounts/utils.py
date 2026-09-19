@@ -8,11 +8,28 @@ logger = logging.getLogger(__name__)
 
 
 def generate_otp():
+    """
+    Generate a cryptographically secure six-digit OTP.
 
+    Randomness is drawn from the secrets module. The value is zero-padded,
+    so the result is always a six-character numeric string (e.g. "042173").
+
+    Returns:
+        str: A zero-padded six-digit numeric OTP.
+    """
     return f"{secrets.randbelow(1_000_000):06d}"
 
 
 def send_verification_email(email, otp):
+    """
+    Send the email-verification message containing the supplied OTP.
+
+    Delivery failures are logged and re-raised to the caller rather than
+    being suppressed.
+
+    Raises:
+        Exception: Propagated if email delivery fails.
+    """
     subject = "Verify Your Email Address"
 
     message = (
@@ -43,6 +60,15 @@ def send_verification_email(email, otp):
 
 
 def send_password_reset_otp_email(email, otp):
+    """
+    Send the password-reset message containing the supplied OTP.
+
+    Delivery failures are logged and re-raised to the caller rather than
+    being suppressed.
+
+    Raises:
+        Exception: Propagated if email delivery fails.
+    """
     subject = "Password Reset OTP"
 
     message = (

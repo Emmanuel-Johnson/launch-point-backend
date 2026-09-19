@@ -57,6 +57,9 @@ logger = logging.getLogger(__name__)
 
 
 def generate_tokens_for_user(user):
+    """
+    Issue a new JWT access/refresh token pair for the given user.
+    """
     refresh = RefreshToken.for_user(user)
 
     return {
@@ -66,6 +69,17 @@ def generate_tokens_for_user(user):
 
 
 def signup_user(validated_data):
+    """
+    Register a new account and start the email verification flow.
+
+    If an unverified account already exists for the email, the signup is
+    resumed against that account (no duplicate user is created) and a fresh
+    verification OTP is issued. Any previously issued verification OTPs are
+    invalidated before the new one is sent.
+
+    Raises:
+        EmailAlreadyExistsException: If a verified account already uses the email.
+    """
     full_name = validated_data["full_name"]
     email = validated_data["email"]
     password = validated_data["password"]
@@ -119,6 +133,19 @@ def signup_user(validated_data):
 
 
 def verify_email_otp(email, otp):
+    """
+    Verify the email-verification OTP and activate the account.
+
+    On success the user's email is marked verified, all outstanding
+    verification OTPs are cleared, and a JWT token pair is returned so the
+    caller is logged in immediately.
+
+    Raises:
+        InvalidEmailVerificationOTPException: If the user or OTP is missing,
+            or the submitted OTP does not match.
+        EmailAlreadyVerifiedException: If the email has already been verified.
+        EmailVerificationOTPExpiredException: If the OTP has expired.
+    """
     logger.info("Email verification attempt")
     user = get_user_by_email(email)
 
@@ -182,6 +209,17 @@ def verify_email_otp(email, otp):
 
 
 def resend_verification_otp(email):
+    """
+    Issue a new email-verification OTP, subject to a resend cooldown.
+
+    The previous OTP is invalidated and replaced. Resends are throttled by
+    OTP_RESEND_COOLDOWN_SECONDS to limit email/OTP abuse.
+
+    Raises:
+        InvalidEmailVerificationOTPException: If no matching user is found.
+        EmailAlreadyVerifiedException: If the email has already been verified.
+        OTPResendTooSoonException: If a resend is requested during the cooldown window.
+    """
     logger.info("Verification OTP resend requested")
 
     user = get_user_by_email(email)
@@ -239,6 +277,17 @@ def resend_verification_otp(email):
 
 
 def login_user(validated_data):
+    """
+    Authenticate a standard user with email and password.
+
+    Requires valid credentials on a verified, active account. Superusers are
+    intentionally rejected here and must authenticate through the admin login
+    flow. Every failure mode raises the same generic exception so callers
+    cannot infer which specific check failed.
+
+    Raises:
+        InvalidCredentialsException: If authentication fails for any reason.
+    """
     email = validated_data["email"]
     password = validated_data["password"]
 
@@ -246,6 +295,8 @@ def login_user(validated_data):
 
     user = get_user_by_email(email)
 
+    # Superusers are barred from the standard login (admin_login_user only);
+    # all conditions collapse into one error to avoid leaking which failed.
     if (
         not user
         or not user.check_password(password)
@@ -272,12 +323,21 @@ def login_user(validated_data):
 
 
 def forgot_password(email):
+    """
+    Start the password reset flow by issuing a reset OTP.
+
+    Returns the same generic message whether or not an account exists, to
+    prevent account enumeration. Only verified accounts actually receive an
+    OTP; any existing reset OTPs are invalidated first.
+    """
     logger.info("Password reset requested")
 
     user = get_verified_user_by_email(email)
 
     if not user:
         logger.info("Password reset requested for non-existing email")
+        # Mirror the success response for unknown emails so responses do not
+        # reveal whether an account exists (account enumeration protection).
         return {
             "message": (
                 "If an account exists for this email, "
@@ -317,6 +377,19 @@ def forgot_password(email):
 
 
 def verify_password_reset_otp(email, otp):
+    """
+    Verify a password-reset OTP and issue a single-use reset token.
+
+    On success all reset OTPs and any prior reset tokens are cleared, a new
+    reset token is persisted (hashed), and the raw token is returned to the
+    caller for the final reset step. The raw token is only available here and
+    is never stored in plaintext.
+
+    Raises:
+        InvalidPasswordResetOTPException: If the user or OTP is missing, or the
+            submitted OTP does not match.
+        PasswordResetOTPExpiredException: If the OTP has expired.
+    """
     logger.info("Password reset OTP verification attempt")
 
     user = get_verified_user_by_email(email)
@@ -379,6 +452,16 @@ def verify_password_reset_otp(email, otp):
 
 
 def resend_password_reset_otp(email):
+    """
+    Issue a new password-reset OTP, subject to a resend cooldown.
+
+    The previous reset OTP is invalidated and replaced. Resends are throttled
+    by OTP_RESEND_COOLDOWN_SECONDS.
+
+    Raises:
+        InvalidCredentialsException: If no verified user is found for the email.
+        OTPResendTooSoonException: If a resend is requested during the cooldown window.
+    """
     logger.info("Password reset OTP resend requested")
 
     user = get_verified_user_by_email(email)
@@ -428,6 +511,13 @@ def resend_password_reset_otp(email):
 
 
 def generate_password_reset_token():
+    """
+    Create a password-reset token and return it alongside its hash.
+
+    Returns a (raw_token, token_hash) tuple: the raw token is handed to the
+    user while only the SHA-256 hash is persisted, so a database leak cannot
+    expose usable reset tokens.
+    """
     raw_token = secrets.token_urlsafe(32)
 
     token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
@@ -436,6 +526,18 @@ def generate_password_reset_token():
 
 
 def reset_password(reset_token, new_password):
+    """
+    Complete a password reset using a previously issued reset token.
+
+    Validates the reset token (matched by its hash), rejects reuse of the
+    current password, updates the password, and invalidates the used token
+    along with any other outstanding reset tokens for the user.
+
+    Raises:
+        InvalidPasswordResetTokenException: If the token does not match a stored token.
+        PasswordResetTokenExpiredException: If the token has expired.
+        SamePasswordException: If the new password matches the current password.
+    """
 
     logger.info("Password reset attempt")
 
@@ -475,6 +577,25 @@ def reset_password(reset_token, new_password):
 
 
 def google_authenticate(id_token_string):
+    """
+    Authenticate (or provision) a user from a Google ID token.
+
+    The Google ID token is verified against GOOGLE_CLIENT_ID and must carry a
+    Google-verified email. Account resolution proceeds in three cases:
+
+        1. A user already linked to the Google account is signed in.
+        2. An existing verified account with the same email has the Google
+           account linked to it, then is signed in.
+        3. Otherwise a new Google-backed account is created.
+
+    Inactive accounts are always rejected. On success a JWT token pair is
+    returned.
+
+    Raises:
+        InvalidGoogleTokenException: If the token is invalid, its email is
+            unverified, required claims are missing, the account is inactive,
+            or the email is already linked to a different Google account.
+    """
 
     logger.info("Google authentication attempt")
 
@@ -520,6 +641,8 @@ def google_authenticate(id_token_string):
         user = get_verified_user_by_email(email)
 
         if user:
+            # Reject linking when the email already belongs to a different
+            # Google identity, to prevent account takeover via a mismatched sub.
             if user.google_id and user.google_id != google_id:
                 logger.warning(
                     "Google authentication failed: email linked to a "
@@ -573,6 +696,16 @@ def google_authenticate(id_token_string):
 
 
 def admin_login_user(validated_data):
+    """
+    Authenticate an administrator with email and password.
+
+    Requires an active account that is both staff and superuser; all other
+    accounts are rejected. Every failure mode raises the same generic
+    exception so callers cannot infer which specific check failed.
+
+    Raises:
+        InvalidCredentialsException: If authentication fails for any reason.
+    """
     email = validated_data["email"]
     password = validated_data["password"]
 
