@@ -72,7 +72,6 @@ def signup_user(validated_data):
 
     logger.info("Signup attempt")
 
-    # Check whether the email is already registered
     existing_user = get_user_by_email(email)
 
     if existing_user and existing_user.email_verified:
@@ -90,26 +89,20 @@ def signup_user(validated_data):
         )
         logger.info("User created successfully user_id=%s", user.id)
 
-    # Delete any existing OTPs for this user
     delete_email_verification_otps(user)
 
-    # Generate a new 6-digit OTP
     otp = generate_otp()
 
-    # Hash the OTP before storing it
     otp_hash = make_password(otp)
 
-    # OTP expires after 5 minutes
     expires_at = timezone.now() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
 
-    # Store hashed OTP
     create_email_verification_otp(
         user=user,
         otp_hash=otp_hash,
         expires_at=expires_at,
     )
 
-    # Send raw OTP to user's email
     send_verification_email(
         user.email,
         otp,
@@ -127,15 +120,12 @@ def signup_user(validated_data):
 
 def verify_email_otp(email, otp):
     logger.info("Email verification attempt")
-    # Find user by email
     user = get_user_by_email(email)
 
-    # Do not reveal whether the email exists
     if not user:
         logger.warning("Email verification failed: user not found")
         raise InvalidEmailVerificationOTPException()
 
-    # Check whether email is already verified
     if user.email_verified:
         logger.warning(
             "Email verification rejected: already verified user_id=%s",
@@ -143,7 +133,6 @@ def verify_email_otp(email, otp):
         )
         raise EmailAlreadyVerifiedException()
 
-    # Get the latest OTP
     verification_otp = get_latest_email_verification_otp(user)
 
     if not verification_otp:
@@ -153,7 +142,6 @@ def verify_email_otp(email, otp):
         )
         raise InvalidEmailVerificationOTPException()
 
-    # Compare entered OTP with hashed OTP
     if not check_password(
         otp,
         verification_otp.otp_hash,
@@ -164,7 +152,6 @@ def verify_email_otp(email, otp):
         )
         raise InvalidEmailVerificationOTPException()
 
-    # OTP is correct, now check expiry
     if timezone.now() >= verification_otp.expires_at:
         logger.warning(
             "Email verification failed: expired OTP user_id=%s",
@@ -172,7 +159,6 @@ def verify_email_otp(email, otp):
         )
         raise EmailVerificationOTPExpiredException()
 
-    # OTP is correct and valid
     verify_user_email(user)
 
     logger.info(
@@ -180,7 +166,6 @@ def verify_email_otp(email, otp):
         user.id,
     )
 
-    # Delete OTP after successful verification
     delete_email_verification_otps(user)
 
     tokens = generate_tokens_for_user(user)
@@ -226,16 +211,12 @@ def resend_verification_otp(email):
             )
             raise OTPResendTooSoonException()
 
-    # Delete the previous OTP
     delete_email_verification_otps(user)
 
-    # Generate a new OTP
     otp = generate_otp()
 
-    # Hash OTP before storing
     otp_hash = make_password(otp)
 
-    # OTP expires after 5 minutes
     expires_at = timezone.now() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
 
     create_email_verification_otp(
@@ -244,7 +225,6 @@ def resend_verification_otp(email):
         expires_at=expires_at,
     )
 
-    # Send the raw OTP to the user's email
     send_verification_email(
         email=user.email,
         otp=otp,
@@ -264,10 +244,8 @@ def login_user(validated_data):
 
     logger.info("Login attempt")
 
-    # Find user
     user = get_user_by_email(email)
 
-    # Check credentials and verification status
     if (
         not user
         or not user.check_password(password)
@@ -278,7 +256,6 @@ def login_user(validated_data):
         logger.warning("Login failed")
         raise InvalidCredentialsException()
 
-    # Generate JWT tokens
     tokens = generate_tokens_for_user(user)
 
     logger.info("Login successful user_id=%s", user.id)
@@ -308,10 +285,8 @@ def forgot_password(email):
             )
         }
 
-    # Delete any previous password reset OTPs
     delete_password_reset_otps(user)
 
-    # Generate a new OTP
     otp = generate_otp()
 
     logger.info(
@@ -319,10 +294,8 @@ def forgot_password(email):
         user.id,
     )
 
-    # Hash the OTP before storing it
     otp_hash = make_password(otp)
 
-    # OTP expires after 5 minutes
     expires_at = timezone.now() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
 
     create_password_reset_otp(
@@ -331,7 +304,6 @@ def forgot_password(email):
         expires_at=expires_at,
     )
 
-    # Send the raw OTP to the user's email
     send_password_reset_otp_email(
         email=user.email,
         otp=otp,
@@ -362,7 +334,6 @@ def verify_password_reset_otp(email, otp):
         )
         raise InvalidPasswordResetOTPException()
 
-    # Check OTP first
     if not check_password(
         otp,
         password_reset_otp.otp_hash,
@@ -373,7 +344,6 @@ def verify_password_reset_otp(email, otp):
         )
         raise InvalidPasswordResetOTPException()
 
-    # OTP is correct, now check expiry
     if timezone.now() >= password_reset_otp.expires_at:
         logger.warning(
             "Password reset OTP verification failed: expired OTP user_id=%s",
@@ -381,7 +351,6 @@ def verify_password_reset_otp(email, otp):
         )
         raise PasswordResetOTPExpiredException()
 
-    # OTP is correct and valid
     delete_password_reset_otps(user)
 
     delete_password_reset_tokens(user)
@@ -431,17 +400,12 @@ def resend_password_reset_otp(email):
                 user.id,
             )
             raise OTPResendTooSoonException()
-
-    # Delete previous OTP
     delete_password_reset_otps(user)
 
-    # Generate new OTP
     otp = generate_otp()
 
-    # Hash OTP before storing
     otp_hash = make_password(otp)
 
-    # OTP expires after 5 minutes
     expires_at = timezone.now() + timedelta(minutes=settings.OTP_EXPIRY_MINUTES)
 
     create_password_reset_otp(
@@ -450,7 +414,6 @@ def resend_password_reset_otp(email):
         expires_at=expires_at,
     )
 
-    # Send raw OTP to email
     send_password_reset_otp_email(
         email=user.email,
         otp=otp,
@@ -490,7 +453,6 @@ def reset_password(reset_token, new_password):
 
     user = token.user
 
-    # Prevent using the current password again
     if user.check_password(new_password):
         logger.warning(
             "Password reset failed: same password user_id=%s",
@@ -500,10 +462,8 @@ def reset_password(reset_token, new_password):
 
     update_user_password(user, new_password)
 
-    # Make token single-use
     mark_password_reset_token_used(token)
 
-    # Remove any other reset tokens
     delete_password_reset_tokens(user)
 
     logger.info(
@@ -519,9 +479,6 @@ def google_authenticate(id_token_string):
     logger.info("Google authentication attempt")
 
     try:
-        # Verify the ID token sent by the frontend.
-        # This checks that the token is valid and was issued
-        # for your Google Client ID.
         idinfo = id_token.verify_oauth2_token(
             id_token_string,
             requests.Request(),
@@ -532,13 +489,11 @@ def google_authenticate(id_token_string):
         logger.warning("Google authentication failed: invalid token")
         raise InvalidGoogleTokenException()
 
-    # Get information from the verified Google ID token
     google_id = idinfo.get("sub")
     email = idinfo.get("email")
     email_verified = idinfo.get("email_verified")
     full_name = idinfo.get("name")
 
-    # Basic validation
     if not google_id or not email:
         logger.warning(
             "Google authentication failed: missing google_id or email in token"
@@ -549,18 +504,11 @@ def google_authenticate(id_token_string):
         logger.warning("Google authentication failed: email not verified by Google")
         raise InvalidGoogleTokenException()
 
-    # Normalize email
     email = email.lower()
-
-    # ---------------------------------------------------------
-    # 1. Check whether this Google account already exists
-    # ---------------------------------------------------------
 
     user = get_user_by_google_id(google_id)
 
     if user:
-        # Google account already linked to this user.
-        # Just log them in.
         if not user.is_active:
             logger.warning(
                 "Google authentication failed: inactive user user_id=%s",
@@ -569,34 +517,10 @@ def google_authenticate(id_token_string):
             raise InvalidGoogleTokenException()
 
     else:
-        # ---------------------------------------------------------
-        # 2. Google account does not exist yet.
-        #    Check whether the email already belongs to a user.
-        # ---------------------------------------------------------
-
         user = get_verified_user_by_email(email)
 
         if user:
-            # -------------------------------------------------
-            # Existing normal email/password account
-            # -------------------------------------------------
-            #
-            # Link this Google account to the existing user.
-            #
-            # Example:
-            #
-            # Before:
-            # email = john@gmail.com
-            # google_id = None
-            #
-            # After:
-            # email = john@gmail.com
-            # google_id = 123456789
-            #
-
             if user.google_id and user.google_id != google_id:
-                # This email is already linked to a different
-                # Google account.
                 logger.warning(
                     "Google authentication failed: email linked to a "
                     "different Google account user_id=%s",
@@ -612,10 +536,6 @@ def google_authenticate(id_token_string):
             )
 
         else:
-            # -------------------------------------------------
-            # 3. Completely new user
-            # -------------------------------------------------
-
             user = create_google_user(
                 full_name=full_name or email.split("@")[0],
                 email=email,
@@ -627,20 +547,12 @@ def google_authenticate(id_token_string):
                 user.id,
             )
 
-    # ---------------------------------------------------------
-    # 4. Check whether the account is active
-    # ---------------------------------------------------------
-
     if not user.is_active:
         logger.warning(
             "Google authentication failed: inactive account user_id=%s",
             user.id,
         )
         raise InvalidGoogleTokenException()
-
-    # ---------------------------------------------------------
-    # 5. Generate your application's JWT tokens
-    # ---------------------------------------------------------
 
     tokens = generate_tokens_for_user(user)
 

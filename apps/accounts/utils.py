@@ -8,9 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def generate_otp():
-    """
-    Generate a secure 6-digit OTP.
-    """
+
     return f"{secrets.randbelow(1_000_000):06d}"
 
 
