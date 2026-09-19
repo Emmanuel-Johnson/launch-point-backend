@@ -37,6 +37,13 @@ logger = logging.getLogger(__name__)
 
 
 class SignupView(APIView):
+    """
+    Register a new user account.
+
+    Validates the signup payload and delegates account creation to the
+    service layer. Returns HTTP 201 on success.
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -55,6 +62,13 @@ class SignupView(APIView):
 
 
 class VerifyEmailOTPView(APIView):
+    """
+    Verify the OTP submitted for email address verification.
+
+    On success the account is activated and an access/refresh token pair is
+    returned in the response body.
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -76,6 +90,10 @@ class VerifyEmailOTPView(APIView):
 
 
 class ResendEmailVerificationOTPView(APIView):
+    """
+    Resend the email verification OTP for an unverified account.
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -91,6 +109,12 @@ class ResendEmailVerificationOTPView(APIView):
 
 
 class LoginView(APIView):
+    """
+    Authenticate a user with email and password.
+
+    Returns an access/refresh token pair on success.
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -109,6 +133,13 @@ class LoginView(APIView):
 
 
 class ForgotPasswordView(APIView):
+    """
+    Initiate the password reset flow for a given email.
+
+    Always responds with HTTP 200; the response does not reveal whether an
+    account exists for the submitted email.
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -126,6 +157,13 @@ class ForgotPasswordView(APIView):
 
 
 class VerifyPasswordResetOTPView(APIView):
+    """
+    Verify a password reset OTP.
+
+    Returns a single-use reset token in the response body, which the client
+    must supply to the reset-password endpoint to complete the reset.
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -147,6 +185,10 @@ class VerifyPasswordResetOTPView(APIView):
 
 
 class ResendPasswordResetOTPView(APIView):
+    """
+    Resend the password reset OTP for an account.
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -162,6 +204,10 @@ class ResendPasswordResetOTPView(APIView):
 
 
 class ResetPasswordView(APIView):
+    """
+    Complete a password reset using a reset token and a new password.
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -183,6 +229,12 @@ class ResetPasswordView(APIView):
 
 
 class GoogleAuthenticationView(APIView):
+    """
+    Authenticate a user via a Google ID token.
+
+    Returns an access/refresh token pair on success.
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -201,6 +253,14 @@ class GoogleAuthenticationView(APIView):
 
 
 class LogoutView(APIView):
+    """
+    Log out an authenticated user by blacklisting their refresh token.
+
+    Requires authentication. Expects the refresh token in the request body
+    under the "refresh" key. Responds with HTTP 400 if it is missing and
+    HTTP 401 if it is invalid or already expired.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -242,6 +302,14 @@ class LogoutView(APIView):
 
 
 class AdminLoginView(APIView):
+    """
+    Authenticate an administrator with email and password.
+
+    Returns an access/refresh token pair on success. The endpoint itself is
+    open to unauthenticated requests; administrator privileges are enforced
+    during credential validation.
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -260,6 +328,14 @@ class AdminLoginView(APIView):
 
 
 class AdminLogoutView(APIView):
+    """
+    Log out an authenticated administrator by blacklisting their refresh token.
+
+    Restricted to admin users. Expects the refresh token in the request body
+    under the "admin_refresh" key. Responds with HTTP 400 if it is missing and
+    HTTP 401 if it is invalid or already expired.
+    """
+
     permission_classes = [IsAdminUser]
 
     def post(self, request):

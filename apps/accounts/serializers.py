@@ -4,6 +4,12 @@ from .validators import validate_full_name, validate_password
 
 
 class SignupSerializer(serializers.Serializer):
+    """
+    Validate the payload for new user registration (full name, email, password).
+
+    The password is write-only and the email is trimmed and lowercased.
+    """
+
     full_name = serializers.CharField(
         required=True,
         allow_blank=False,
@@ -30,6 +36,12 @@ class SignupSerializer(serializers.Serializer):
 
 
 class VerifyEmailOTPSerializer(serializers.Serializer):
+    """
+    Validate an email verification OTP submission (email and OTP).
+
+    The OTP must be exactly six numeric digits.
+    """
+
     email = serializers.EmailField(
         required=True,
     )
@@ -49,6 +61,12 @@ class VerifyEmailOTPSerializer(serializers.Serializer):
 
 
 class ResendEmailVerificationOTPSerializer(serializers.Serializer):
+    """
+    Validate the email for resending an email verification OTP.
+
+    The email is trimmed and lowercased.
+    """
+
     email = serializers.EmailField(
         required=True,
         max_length=254,
@@ -59,6 +77,12 @@ class ResendEmailVerificationOTPSerializer(serializers.Serializer):
 
 
 class LoginSerializer(serializers.Serializer):
+    """
+    Validate user login credentials (email and password).
+
+    The password is write-only and the email is trimmed and lowercased.
+    """
+
     email = serializers.EmailField(
         required=True,
         allow_blank=False,
@@ -77,6 +101,12 @@ class LoginSerializer(serializers.Serializer):
 
 
 class ForgotPasswordSerializer(serializers.Serializer):
+    """
+    Validate the email for initiating a password reset.
+
+    The email is trimmed and lowercased.
+    """
+
     email = serializers.EmailField(
         required=True,
         max_length=254,
@@ -87,6 +117,13 @@ class ForgotPasswordSerializer(serializers.Serializer):
 
 
 class VerifyPasswordResetOTPSerializer(serializers.Serializer):
+    """
+    Validate a password reset OTP submission (email and OTP).
+
+    The OTP must be exactly six numeric digits and the email is trimmed
+    and lowercased.
+    """
+
     email = serializers.EmailField(
         required=True,
         max_length=254,
@@ -109,6 +146,12 @@ class VerifyPasswordResetOTPSerializer(serializers.Serializer):
 
 
 class ResendPasswordResetOTPSerializer(serializers.Serializer):
+    """
+    Validate the email for resending a password reset OTP.
+
+    The email is trimmed and lowercased.
+    """
+
     email = serializers.EmailField(
         required=True,
         max_length=254,
@@ -119,6 +162,13 @@ class ResendPasswordResetOTPSerializer(serializers.Serializer):
 
 
 class ResetPasswordSerializer(serializers.Serializer):
+    """
+    Validate the payload for completing a password reset.
+
+    Requires the reset token and a new password; the new password is
+    write-only and checked by the shared password validator.
+    """
+
     reset_token = serializers.CharField(
         required=True,
     )
@@ -133,6 +183,10 @@ class ResetPasswordSerializer(serializers.Serializer):
 
 
 class GoogleAuthenticationSerializer(serializers.Serializer):
+    """
+    Validate the Google authentication payload (a Google ID token).
+    """
+
     id_token = serializers.CharField(
         required=True,
         allow_blank=False,
@@ -140,6 +194,12 @@ class GoogleAuthenticationSerializer(serializers.Serializer):
 
 
 class AdminLoginSerializer(serializers.Serializer):
+    """
+    Validate administrator login credentials (email and password).
+
+    The password is write-only and the email is trimmed and lowercased.
+    """
+
     email = serializers.EmailField(
         required=True,
         allow_blank=False,

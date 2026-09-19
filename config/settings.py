@@ -24,6 +24,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
+    # Provides refresh-token blacklisting, relied on by logout and by
+    # blacklisting the previous token on rotation (see SIMPLE_JWT below).
     "rest_framework_simplejwt.token_blacklist",
     "apps.accounts.apps.AccountsConfig",
 ]
@@ -31,6 +33,8 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
+    # CorsMiddleware must sit above CommonMiddleware so CORS headers are applied
+    # to all responses (including any early redirects); keep it first.
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -73,6 +77,8 @@ DATABASES = {
 }
 
 
+# Authenticated-by-default API: every endpoint requires a valid JWT unless a
+# view explicitly opts out (e.g. with AllowAny on the public auth endpoints).
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -80,6 +86,8 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
+# Short-lived access tokens with rotating refresh tokens; the previous refresh
+# token is blacklisted on each rotation (requires the token_blacklist app).
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -90,6 +98,7 @@ SIMPLE_JWT = {
 
 GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID")
 
+# Allow the local Vite/React dev server (its default port) to call the API.
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
@@ -138,12 +147,15 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
 
 
+# Centralized expiry/cooldown values for the OTP and password-reset workflows,
+# so the auth services and the OTP emails share a single source of truth.
 OTP_EXPIRY_MINUTES = 5
 OTP_RESEND_COOLDOWN_SECONDS = 60
 PASSWORD_RESET_TOKEN_EXPIRY_MINUTES = 15
 
 
 LOG_DIR = BASE_DIR / "logs"
+# Ensure the log directory exists before the file handler opens django.log.
 LOG_DIR.mkdir(exist_ok=True)
 
 LOGGING = {
