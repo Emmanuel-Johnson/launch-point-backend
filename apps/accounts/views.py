@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .mixins import ThrottleMessageMixin
 from .permissions import IsAdminUser
 from .serializers import (
     AdminLoginSerializer,
@@ -44,7 +45,7 @@ from .throttles import (
 logger = logging.getLogger(__name__)
 
 
-class SignupView(APIView):
+class SignupView(ThrottleMessageMixin, APIView):
     """
     Register a new user account.
 
@@ -70,7 +71,7 @@ class SignupView(APIView):
         )
 
 
-class VerifyEmailOTPView(APIView):
+class VerifyEmailOTPView(ThrottleMessageMixin, APIView):
     """
     Verify the OTP submitted for email address verification.
 
@@ -99,7 +100,7 @@ class VerifyEmailOTPView(APIView):
         )
 
 
-class ResendEmailVerificationOTPView(APIView):
+class ResendEmailVerificationOTPView(ThrottleMessageMixin, APIView):
     """
     Resend the email verification OTP for an unverified account.
     """
@@ -119,7 +120,7 @@ class ResendEmailVerificationOTPView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 
-class LoginView(APIView):
+class LoginView(ThrottleMessageMixin, APIView):
     """
     Authenticate a user with email and password.
 
@@ -144,7 +145,7 @@ class LoginView(APIView):
         )
 
 
-class ForgotPasswordView(APIView):
+class ForgotPasswordView(ThrottleMessageMixin, APIView):
     """
     Initiate the password reset flow for a given email.
 
@@ -169,7 +170,7 @@ class ForgotPasswordView(APIView):
         )
 
 
-class VerifyPasswordResetOTPView(APIView):
+class VerifyPasswordResetOTPView(ThrottleMessageMixin, APIView):
     """
     Verify a password reset OTP.
 
@@ -198,7 +199,7 @@ class VerifyPasswordResetOTPView(APIView):
         )
 
 
-class ResendPasswordResetOTPView(APIView):
+class ResendPasswordResetOTPView(ThrottleMessageMixin, APIView):
     """
     Resend the password reset OTP for an account.
     """
@@ -218,7 +219,7 @@ class ResendPasswordResetOTPView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 
-class ResetPasswordView(APIView):
+class ResetPasswordView(ThrottleMessageMixin, APIView):
     """
     Complete a password reset using a reset token and a new password.
     """
@@ -244,7 +245,7 @@ class ResetPasswordView(APIView):
         )
 
 
-class GoogleAuthenticationView(APIView):
+class GoogleAuthenticationView(ThrottleMessageMixin, APIView):
     """
     Authenticate a user via a Google ID token.
 
@@ -318,7 +319,7 @@ class LogoutView(APIView):
         )
 
 
-class AdminLoginView(APIView):
+class AdminLoginView(ThrottleMessageMixin, APIView):
     """
     Authenticate an administrator with email and password.
 
