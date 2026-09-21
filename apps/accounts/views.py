@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .mixins import ThrottleMessageMixin
 from .permissions import IsAdminUser
 from .serializers import (
     AdminLoginSerializer,
@@ -32,11 +33,19 @@ from .services import (
     verify_email_otp,
     verify_password_reset_otp,
 )
+from .throttles import (
+    AdminLoginRateThrottle,
+    GoogleAuthRateThrottle,
+    LoginRateThrottle,
+    OTPRateThrottle,
+    PasswordResetRateThrottle,
+    SignupRateThrottle,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class SignupView(APIView):
+class SignupView(ThrottleMessageMixin, APIView):
     """
     Register a new user account.
 
@@ -44,6 +53,7 @@ class SignupView(APIView):
     service layer. Returns HTTP 201 on success.
     """
 
+    throttle_classes = [SignupRateThrottle]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -61,7 +71,7 @@ class SignupView(APIView):
         )
 
 
-class VerifyEmailOTPView(APIView):
+class VerifyEmailOTPView(ThrottleMessageMixin, APIView):
     """
     Verify the OTP submitted for email address verification.
 
@@ -69,6 +79,7 @@ class VerifyEmailOTPView(APIView):
     returned in the response body.
     """
 
+    throttle_classes = [OTPRateThrottle]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -89,11 +100,12 @@ class VerifyEmailOTPView(APIView):
         )
 
 
-class ResendEmailVerificationOTPView(APIView):
+class ResendEmailVerificationOTPView(ThrottleMessageMixin, APIView):
     """
     Resend the email verification OTP for an unverified account.
     """
 
+    throttle_classes = [OTPRateThrottle]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -108,13 +120,14 @@ class ResendEmailVerificationOTPView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 
-class LoginView(APIView):
+class LoginView(ThrottleMessageMixin, APIView):
     """
     Authenticate a user with email and password.
 
     Returns an access/refresh token pair on success.
     """
 
+    throttle_classes = [LoginRateThrottle]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -132,7 +145,7 @@ class LoginView(APIView):
         )
 
 
-class ForgotPasswordView(APIView):
+class ForgotPasswordView(ThrottleMessageMixin, APIView):
     """
     Initiate the password reset flow for a given email.
 
@@ -140,6 +153,7 @@ class ForgotPasswordView(APIView):
     account exists for the submitted email.
     """
 
+    throttle_classes = [PasswordResetRateThrottle]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -156,7 +170,7 @@ class ForgotPasswordView(APIView):
         )
 
 
-class VerifyPasswordResetOTPView(APIView):
+class VerifyPasswordResetOTPView(ThrottleMessageMixin, APIView):
     """
     Verify a password reset OTP.
 
@@ -164,6 +178,7 @@ class VerifyPasswordResetOTPView(APIView):
     must supply to the reset-password endpoint to complete the reset.
     """
 
+    throttle_classes = [OTPRateThrottle]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -184,11 +199,12 @@ class VerifyPasswordResetOTPView(APIView):
         )
 
 
-class ResendPasswordResetOTPView(APIView):
+class ResendPasswordResetOTPView(ThrottleMessageMixin, APIView):
     """
     Resend the password reset OTP for an account.
     """
 
+    throttle_classes = [OTPRateThrottle]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -203,11 +219,12 @@ class ResendPasswordResetOTPView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 
-class ResetPasswordView(APIView):
+class ResetPasswordView(ThrottleMessageMixin, APIView):
     """
     Complete a password reset using a reset token and a new password.
     """
 
+    throttle_classes = [PasswordResetRateThrottle]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -228,13 +245,14 @@ class ResetPasswordView(APIView):
         )
 
 
-class GoogleAuthenticationView(APIView):
+class GoogleAuthenticationView(ThrottleMessageMixin, APIView):
     """
     Authenticate a user via a Google ID token.
 
     Returns an access/refresh token pair on success.
     """
 
+    throttle_classes = [GoogleAuthRateThrottle]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -301,7 +319,7 @@ class LogoutView(APIView):
         )
 
 
-class AdminLoginView(APIView):
+class AdminLoginView(ThrottleMessageMixin, APIView):
     """
     Authenticate an administrator with email and password.
 
@@ -310,6 +328,7 @@ class AdminLoginView(APIView):
     during credential validation.
     """
 
+    throttle_classes = [AdminLoginRateThrottle]
     permission_classes = [AllowAny]
 
     def post(self, request):

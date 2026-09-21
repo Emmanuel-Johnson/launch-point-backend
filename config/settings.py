@@ -84,6 +84,20 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_THROTTLE_CLASSES": (
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/day",
+        "user": "1000/day",
+        "signup": "5/hour",
+        "otp": "5/min",
+        "login": "5/min",
+        "password_reset": "5/min",
+        "google_auth": "10/min",
+        "admin_login": "3/min",
+    },
 }
 
 # Short-lived access tokens with rotating refresh tokens; the previous refresh
