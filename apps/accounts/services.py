@@ -128,6 +128,7 @@ def signup_user(validated_data):
             "id": user.id,
             "full_name": user.full_name,
             "email": user.email,
+            "role": user.role,
         },
     }
 
@@ -203,6 +204,7 @@ def verify_email_otp(email, otp):
             "id": user.id,
             "full_name": user.full_name,
             "email": user.email,
+            "role": user.role,
         },
         "tokens": tokens,
     }
@@ -317,6 +319,7 @@ def login_user(validated_data):
             "id": user.id,
             "full_name": user.full_name,
             "email": user.email,
+            "role": user.role,
         },
         "tokens": tokens,
     }
@@ -690,6 +693,7 @@ def google_authenticate(id_token_string):
             "id": user.id,
             "full_name": user.full_name,
             "email": user.email,
+            "role": user.role,
         },
         "tokens": tokens,
     }
@@ -733,6 +737,7 @@ def admin_login_user(validated_data):
             "id": user.id,
             "full_name": user.full_name,
             "email": user.email,
+            "role": user.role,
         },
         "tokens": tokens,
     }

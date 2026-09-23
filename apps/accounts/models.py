@@ -51,6 +51,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
+        extra_fields.setdefault("role", self.model.Role.ADMIN)
 
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True")
@@ -70,9 +71,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     Google account through google_id.
     """
 
+    class Role(models.TextChoices):
+        STUDENT = "student", "Student"
+        INSTRUCTOR = "instructor", "Instructor"
+        ADMIN = "admin", "Admin"
+
     full_name = models.CharField(max_length=150)
 
     email = models.EmailField(unique=True, max_length=255)
+
+    role = models.CharField(
+        max_length=20,
+        choices=Role.choices,
+        default=Role.STUDENT,
+    )
 
     # Set when the account is linked to a Google (OAuth) identity; null for
     # accounts that authenticate with a password only.
