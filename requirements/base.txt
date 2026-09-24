@@ -5,3 +5,4 @@ djangorestframework==3.17.1
 djangorestframework_simplejwt==5.5.1
 google-auth==2.58.0
 psycopg==3.3.4
+Pillow==12.3.0
