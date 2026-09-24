@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     # blacklisting the previous token on rotation (see SIMPLE_JWT below).
     "rest_framework_simplejwt.token_blacklist",
     "apps.accounts.apps.AccountsConfig",
+    "apps.students.apps.StudentsConfig",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -146,6 +147,9 @@ USE_TZ = True
 
 
 STATIC_URL = "static/"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
