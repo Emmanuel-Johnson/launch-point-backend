@@ -12,14 +12,25 @@ from apps.students.services.student_profile_service import (
 
 
 class StudentProfileView(APIView):
+    """
+    API view for retrieving and updating the authenticated
+    student's profile.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        """
+        Retrieve the authenticated student's profile.
+        """
+
         profile = StudentProfileService.get_profile(
             user=request.user,
         )
 
-        serializer = StudentProfileSerializer(profile)
+        serializer = StudentProfileSerializer(
+            profile,
+        )
 
         return Response(
             serializer.data,
@@ -27,14 +38,29 @@ class StudentProfileView(APIView):
         )
 
     def patch(self, request):
-        profile = StudentProfileService.update_profile(
-            user=request.user,
+        """
+        Partially update the authenticated student's profile.
+        """
+
+        serializer = StudentProfileSerializer(
             data=request.data,
+            partial=True,
         )
 
-        serializer = StudentProfileSerializer(profile)
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        profile = StudentProfileService.update_profile(
+            user=request.user,
+            data=serializer.validated_data,
+        )
+
+        response_serializer = StudentProfileSerializer(
+            profile,
+        )
 
         return Response(
-            serializer.data,
+            response_serializer.data,
             status=status.HTTP_200_OK,
         )

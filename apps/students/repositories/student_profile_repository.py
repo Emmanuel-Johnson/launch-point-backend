@@ -13,10 +13,21 @@ class StudentProfileRepository:
         return StudentProfile.objects.create(user=user)
 
     @staticmethod
-    def update(profile, data):
-        for field, value in data.items():
+    def update(profile, profile_data, user_data=None):
+        """
+        Update student profile and related user data.
+        """
+
+        for field, value in profile_data.items():
             setattr(profile, field, value)
 
-        profile.save()
+        if profile_data:
+            profile.save()
+
+        if user_data:
+            for field, value in user_data.items():
+                setattr(profile.user, field, value)
+
+            profile.user.save()
 
         return profile
