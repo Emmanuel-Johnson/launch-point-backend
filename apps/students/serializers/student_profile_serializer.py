@@ -26,6 +26,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "occupation",
             "github_url",
             "linkedin_url",
+            "portfolio_url",
             "created_at",
             "updated_at",
         ]
@@ -58,4 +59,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         return value.strip()
 
     def validate_linkedin_url(self, value):
+        return value.strip()
+
+    def validate_portfolio_url(self, value):
         return value.strip()
