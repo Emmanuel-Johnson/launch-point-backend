@@ -4,7 +4,7 @@ from apps.students.views.student_profile_view import StudentProfileView
 
 urlpatterns = [
     path(
-        "student/profile/",
+        "profile/",
         StudentProfileView.as_view(),
         name="student-profile",
     ),
