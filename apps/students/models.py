@@ -16,8 +16,8 @@ class StudentProfile(models.Model):
     )
 
     profile_image = models.ImageField(
-        upload_to="student_profiles/",
-        null=True,
+        upload_to="profile_images/",
+        default="profile_images/default_profile.png",
         blank=True,
     )
 
