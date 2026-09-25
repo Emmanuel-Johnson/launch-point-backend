@@ -13,6 +13,12 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
+    remove_profile_image = serializers.BooleanField(
+        write_only=True,
+        required=False,
+        default=False,
+    )
+
     class Meta:
         model = StudentProfile
         fields = [
@@ -20,6 +26,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "full_name",
             "email",
             "profile_image",
+            "remove_profile_image",
             "bio",
             "location",
             "education",

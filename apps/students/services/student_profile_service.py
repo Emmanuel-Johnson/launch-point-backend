@@ -8,6 +8,8 @@ from apps.students.repositories.student_profile_repository import (
 class StudentProfileService:
     """Service layer for student profile operations."""
 
+    DEFAULT_PROFILE_IMAGE = "profile_images/default_profile.png"
+
     @staticmethod
     def get_profile(user):
         profile = StudentProfileRepository.get_by_user(user)
@@ -28,6 +30,14 @@ class StudentProfileService:
             profile = StudentProfileRepository.create(user)
 
         user_data = data.pop("user", {})
+
+        remove_profile_image = data.pop(
+            "remove_profile_image",
+            False,
+        )
+
+        if remove_profile_image:
+            data["profile_image"] = StudentProfileService.DEFAULT_PROFILE_IMAGE
 
         return StudentProfileRepository.update(
             profile=profile,
