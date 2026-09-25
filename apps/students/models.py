@@ -16,8 +16,8 @@ class StudentProfile(models.Model):
     )
 
     profile_image = models.ImageField(
-        upload_to="student_profiles/",
-        null=True,
+        upload_to="profile_images/",
+        default="profile_images/default_profile.png",
         blank=True,
     )
 
@@ -38,6 +38,21 @@ class StudentProfile(models.Model):
 
     occupation = models.CharField(
         max_length=150,
+        blank=True,
+    )
+
+    github_url = models.URLField(
+        max_length=255,
+        blank=True,
+    )
+
+    linkedin_url = models.URLField(
+        max_length=255,
+        blank=True,
+    )
+
+    portfolio_url = models.URLField(
+        max_length=255,
         blank=True,
     )
 
