@@ -8,7 +8,10 @@ class StudentRepository:
     def get_all_students():
         return (
             User.objects.select_related("student_profile")
-            .filter(role=User.Role.STUDENT)
+            .filter(
+                role=User.Role.STUDENT,
+                email_verified=True,
+            )
             .order_by("-date_joined")
         )
 
@@ -19,6 +22,7 @@ class StudentRepository:
             .filter(
                 id=student_id,
                 role=User.Role.STUDENT,
+                email_verified=True,
             )
             .first()
         )
