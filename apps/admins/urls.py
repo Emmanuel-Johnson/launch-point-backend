@@ -1,11 +1,19 @@
 from django.urls import path
 
-from apps.students.views.student_profile_view import StudentProfileView
+from apps.admins.views.student_view import (
+    AdminStudentDetailView,
+    AdminStudentListView,
+)
 
 urlpatterns = [
     path(
-        "profile/",
-        StudentProfileView.as_view(),
-        name="student-profile",
+        "students/",
+        AdminStudentListView.as_view(),
+        name="admin-student-list",
+    ),
+    path(
+        "students/<int:student_id>/",
+        AdminStudentDetailView.as_view(),
+        name="admin-student-detail",
     ),
 ]
