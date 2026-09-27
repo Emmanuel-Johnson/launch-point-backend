@@ -17,6 +17,7 @@ from .exceptions import (
     EmailAlreadyExistsException,
     EmailAlreadyVerifiedException,
     EmailVerificationOTPExpiredException,
+    InactiveAccountException,
     InvalidCredentialsException,
     InvalidEmailVerificationOTPException,
     InvalidGoogleTokenException,
@@ -311,10 +312,7 @@ def login_user(validated_data):
 
     if not user.is_active:
         logger.warning("Login failed: inactive account")
-        raise InvalidCredentialsException(
-            "Access to your account has been disabled. "
-            "Please contact support for further assistance."
-        )
+        raise InactiveAccountException()
 
     tokens = generate_tokens_for_user(user)
 
@@ -645,10 +643,7 @@ def google_authenticate(id_token_string):
                 "Google authentication failed: inactive user user_id=%s",
                 user.id,
             )
-            raise InvalidGoogleTokenException(
-                "Access to your account has been disabled. "
-                "Please contact support for further assistance."
-            )
+            raise InactiveAccountException()
 
     else:
         user = get_verified_user_by_email(email)
