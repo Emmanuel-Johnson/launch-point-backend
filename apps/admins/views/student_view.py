@@ -54,4 +54,15 @@ class AdminStudentStatusView(APIView):
 
         serializer = StudentStatusSerializer(student)
 
-        return Response(serializer.data)
+        message = (
+            "Student activated successfully."
+            if student.is_active
+            else "Student deactivated successfully."
+        )
+
+        return Response(
+            {
+                **serializer.data,
+                "message": message,
+            }
+        )
