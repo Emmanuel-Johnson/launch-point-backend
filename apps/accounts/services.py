@@ -309,6 +309,13 @@ def login_user(validated_data):
         logger.warning("Login failed")
         raise InvalidCredentialsException()
 
+    if not user.is_active:
+        logger.warning("Login failed: inactive account")
+        raise InvalidCredentialsException(
+            "Access to your account has been disabled. "
+            "Please contact support for further assistance."
+        )
+
     tokens = generate_tokens_for_user(user)
 
     logger.info("Login successful user_id=%s", user.id)
@@ -638,7 +645,10 @@ def google_authenticate(id_token_string):
                 "Google authentication failed: inactive user user_id=%s",
                 user.id,
             )
-            raise InvalidGoogleTokenException()
+            raise InvalidGoogleTokenException(
+                "Access to your account has been disabled. "
+                "Please contact support for further assistance."
+            )
 
     else:
         user = get_verified_user_by_email(email)
