@@ -94,3 +94,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
             "profile_created_at",
             "profile_updated_at",
         ]
+
+
+class StudentStatusSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField()
