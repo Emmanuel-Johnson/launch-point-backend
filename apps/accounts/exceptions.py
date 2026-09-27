@@ -73,6 +73,15 @@ class InvalidGoogleTokenException(APIException):
     default_code = "invalid_google_token"
 
 
+class InactiveAccountException(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = (
+        "Access to your account has been disabled. "
+        "Please contact support for further assistance."
+    )
+    default_code = "inactive_account"
+
+
 class SamePasswordException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "New password must be different from your current password."
