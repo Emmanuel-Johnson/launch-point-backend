@@ -20,6 +20,17 @@ class AdminCategoryListView(APIView):
 
         return Response(serializer.data)
 
+    def post(self, request):
+        serializer = CategorySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        category = CategoryService.create_category(**serializer.validated_data)
+
+        return Response(
+            CategorySerializer(category).data,
+            status=status.HTTP_201_CREATED,
+        )
+
 
 class AdminCategoryDetailView(APIView):
     permission_classes = [IsAdminUser]
