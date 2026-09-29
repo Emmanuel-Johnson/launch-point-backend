@@ -9,22 +9,22 @@ from apps.categories.views import (
 
 urlpatterns = [
     path(
-        "categories/",
+        "",
         AdminCategoryListView.as_view(),
         name="admin-category-list",
     ),
     path(
-        "categories/<int:category_id>/",
+        "<int:category_id>/",
         AdminCategoryDetailView.as_view(),
         name="admin-category-detail",
     ),
     path(
-        "categories/<int:category_id>/status/",
+        "<int:category_id>/status/",
         AdminCategoryStatusView.as_view(),
         name="admin-category-status",
     ),
     path(
-        "categories/<int:category_id>/update/",
+        "<int:category_id>/update/",
         AdminCategoryUpdateView.as_view(),
         name="admin-category-update",
     ),
