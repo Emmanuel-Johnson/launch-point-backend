@@ -20,3 +20,19 @@ class CategorySerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def validate_name(self, value):
+        value = value.strip()
+
+        if Category.objects.filter(name__iexact=value).exists():
+            raise serializers.ValidationError("Category already exists.")
+
+        return value
+
+    def validate_slug(self, value):
+        value = value.strip()
+
+        if Category.objects.filter(slug__iexact=value).exists():
+            raise serializers.ValidationError("Category slug already exists.")
+
+        return value
