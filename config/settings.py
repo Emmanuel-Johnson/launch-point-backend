@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "apps.students.apps.StudentsConfig",
     "apps.admins.apps.AdminsConfig",
     "apps.categories.apps.CategoriesConfig",
+    "apps.subscriptions.apps.SubscriptionsConfig",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
