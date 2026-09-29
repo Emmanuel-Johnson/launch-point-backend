@@ -24,7 +24,12 @@ class CategorySerializer(serializers.ModelSerializer):
     def validate_name(self, value):
         value = value.strip()
 
-        if Category.objects.filter(name__iexact=value).exists():
+        queryset = Category.objects.filter(name__iexact=value)
+
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+
+        if queryset.exists():
             raise serializers.ValidationError("Category already exists.")
 
         return value
@@ -32,7 +37,12 @@ class CategorySerializer(serializers.ModelSerializer):
     def validate_slug(self, value):
         value = value.strip()
 
-        if Category.objects.filter(slug__iexact=value).exists():
+        queryset = Category.objects.filter(slug__iexact=value)
+
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+
+        if queryset.exists():
             raise serializers.ValidationError("Category slug already exists.")
 
         return value
