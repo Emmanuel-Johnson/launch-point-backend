@@ -22,14 +22,9 @@ class SubscriptionPlan(models.Model):
         choices=PlanType.choices,
     )
 
-    description = models.TextField(
-        blank=True,
-    )
+    description = models.TextField()
 
-    benefits = models.JSONField(
-        default=list,
-        blank=True,
-    )
+    benefits = models.JSONField(default=list)
 
     price = models.DecimalField(
         max_digits=10,
