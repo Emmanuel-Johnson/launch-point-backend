@@ -20,7 +20,6 @@ class SubscriptionPlan(models.Model):
     plan_type = models.CharField(
         max_length=20,
         choices=PlanType.choices,
-        unique=True,
     )
 
     description = models.TextField(
@@ -59,7 +58,15 @@ class SubscriptionPlan(models.Model):
 
     class Meta:
         db_table = "subscription_plans"
-        ordering = ["price"]
+        ordering = ["-created_at"]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["plan_type"],
+                condition=models.Q(plan_type="free"),
+                name="unique_free_plan_type",
+            ),
+        ]
 
     def __str__(self):
         return self.name
