@@ -4,6 +4,7 @@ from apps.subscriptions.views import (
     AdminSubscriptionPlanDetailView,
     AdminSubscriptionPlanListCreateView,
     AdminSubscriptionPlanStatusView,
+    StudentSubscriptionPlanListView,
 )
 
 urlpatterns = [
@@ -21,5 +22,10 @@ urlpatterns = [
         "plans/<int:plan_id>/status/",
         AdminSubscriptionPlanStatusView.as_view(),
         name="admin-subscription-plan-status",
+    ),
+    path(
+        "student/plans/",
+        StudentSubscriptionPlanListView.as_view(),
+        name="student-subscription-plan-list",
     ),
 ]
