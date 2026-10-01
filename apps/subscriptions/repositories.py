@@ -7,6 +7,10 @@ class SubscriptionPlanRepository:
         return SubscriptionPlan.objects.all()
 
     @staticmethod
+    def get_active_plans():
+        return SubscriptionPlan.objects.filter(is_active=True)
+
+    @staticmethod
     def get_by_id(plan_id):
         return SubscriptionPlan.objects.get(id=plan_id)
 

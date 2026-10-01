@@ -140,3 +140,17 @@ class SubscriptionPlanSerializer(serializers.ModelSerializer):
             )
 
         return value
+
+
+class StudentSubscriptionPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubscriptionPlan
+        fields = [
+            "id",
+            "name",
+            "plan_type",
+            "description",
+            "benefits",
+            "price",
+            "billing_interval",
+        ]

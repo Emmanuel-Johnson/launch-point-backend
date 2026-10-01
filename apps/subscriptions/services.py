@@ -7,6 +7,10 @@ class SubscriptionPlanService:
         return SubscriptionPlanRepository.get_all()
 
     @staticmethod
+    def get_active_plans():
+        return SubscriptionPlanRepository.get_active_plans()
+
+    @staticmethod
     def get_plan_by_id(plan_id):
         return SubscriptionPlanRepository.get_by_id(plan_id)
 

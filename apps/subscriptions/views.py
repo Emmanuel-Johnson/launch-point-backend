@@ -1,9 +1,10 @@
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.subscriptions.serializers import (
+    StudentSubscriptionPlanSerializer,
     SubscriptionPlanListSerializer,
     SubscriptionPlanSerializer,
 )
@@ -93,3 +94,17 @@ class AdminSubscriptionPlanStatusView(APIView):
         return Response(
             SubscriptionPlanSerializer(plan).data,
         )
+
+
+class StudentSubscriptionPlanListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        plans = SubscriptionPlanService.get_active_plans()
+
+        serializer = StudentSubscriptionPlanSerializer(
+            plans,
+            many=True,
+        )
+
+        return Response(serializer.data)
