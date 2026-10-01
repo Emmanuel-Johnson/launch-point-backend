@@ -325,6 +325,12 @@ def login_user(validated_data):
             "full_name": user.full_name,
             "email": user.email,
             "role": user.role,
+            "profile_image": (
+                user.student_profile.profile_image.url
+                if hasattr(user, "student_profile")
+                and user.student_profile.profile_image
+                else None
+            ),
         },
         "tokens": tokens,
     }
@@ -699,6 +705,12 @@ def google_authenticate(id_token_string):
             "full_name": user.full_name,
             "email": user.email,
             "role": user.role,
+            "profile_image": (
+                user.student_profile.profile_image.url
+                if hasattr(user, "student_profile")
+                and user.student_profile.profile_image
+                else None
+            ),
         },
         "tokens": tokens,
     }
