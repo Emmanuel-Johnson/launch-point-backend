@@ -10,10 +10,8 @@ urlpatterns = [
     path("api/admins/", include("apps.admins.urls")),
     path("api/admins/categories/", include("apps.categories.urls")),
     path("api/admins/subscriptions/", include("apps.subscriptions.urls")),
-    path(
-        "api/students/subscriptions/",
-        include("apps.subscriptions.student_urls"),
-    ),
+    path("api/students/subscriptions/", include("apps.subscriptions.student_urls")),
+    path("api/instructors/", include("apps.instructors.urls")),
 ]
 
 if settings.DEBUG:
