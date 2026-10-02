@@ -1,3 +1,5 @@
+from django.db import transaction
+
 from apps.students.models import StudentProfile
 
 
@@ -16,31 +18,37 @@ class StudentProfileRepository:
 
     @staticmethod
     def update(profile, profile_data, user_data=None):
-        """
-        Update student profile and related user data.
-        """
+        """Update student profile and related user data."""
 
         old_image = profile.profile_image
+        old_image_name = old_image.name if old_image else None
+        old_image_storage = old_image.storage if old_image else None
 
-        new_image = profile_data.get("profile_image")
-
+        # Update profile fields.
         for field, value in profile_data.items():
             setattr(profile, field, value)
 
         if profile_data:
             profile.save()
 
+        # Update related user fields.
         if user_data:
             for field, value in user_data.items():
                 setattr(profile.user, field, value)
 
             profile.user.save()
 
+        # Get the current image after saving.
+        new_image = profile.profile_image
+        new_image_name = new_image.name if new_image else None
+
+        # Delete the previous uploaded image only if it was replaced.
         if (
-            new_image == StudentProfileRepository.DEFAULT_PROFILE_IMAGE
-            and old_image
-            and old_image.name != StudentProfileRepository.DEFAULT_PROFILE_IMAGE
+            old_image_name
+            and old_image_storage
+            and old_image_name != StudentProfileRepository.DEFAULT_PROFILE_IMAGE
+            and old_image_name != new_image_name
         ):
-            old_image.delete(save=False)
+            transaction.on_commit(lambda: old_image_storage.delete(old_image_name))
 
         return profile
