@@ -1,37 +1,46 @@
 <div align="center">
 
-# 🎓 Launch Point — Backend
+<br>
 
-### Secure, layered authentication API for a subscription-based Learning Management System
+# 🧑‍💻 Launch Point — Backend
+
+#### Secure, layered authentication API for a subscription-based Learning Management System
 
 <br>
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+&nbsp;
 [![Django](https://img.shields.io/badge/Django-5.2-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
+&nbsp;
 [![DRF](https://img.shields.io/badge/DRF-3.17-A30000?style=for-the-badge&logo=django&logoColor=white)](https://www.django-rest-framework.org/)
+&nbsp;
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+&nbsp;
 [![JWT](https://img.shields.io/badge/Auth-JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
 
 <br>
 
-**A production-minded Django REST API with a clean repository + service architecture —**
-**built so every layer is easy to read, test, and explain.**
+**A production-minded Django REST API built with a layered architecture, using repository and service patterns for separation of concerns, maintainability, and testability.**
 
 <sub>Signup · Email OTP verification · JWT sessions · Password reset · Google auth · Admin auth</sub>
+
+<br>
+
+</div>
+
+<div align="center">
+
+**[Overview](#-overview)** &nbsp;·&nbsp; **[Tech Stack](#-tech-stack)** &nbsp;·&nbsp; **[Features](#-features)** &nbsp;·&nbsp; **[Architecture](#-architecture)** &nbsp;·&nbsp; **[Setup](#-getting-started)** &nbsp;·&nbsp; **[Models](#-data-models)** &nbsp;·&nbsp; **[Roadmap](#-roadmap)**
 
 </div>
 
 <br>
 
----
-
 <div align="center">
 
-**[Overview](#-overview)** • **[Tech Stack](#-tech-stack)** • **[Features](#-features)** • **[Architecture](#-architecture)** • **[Structure](#-project-structure)** • **[Setup](#-getting-started)** • **[API](#-api-reference)** • **[Models](#-data-models)** • **[Roadmap](#-roadmap)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 </div>
-
----
 
 <br>
 
@@ -46,42 +55,38 @@ The codebase is intentionally structured in clear layers — HTTP, validation, b
 
 <br>
 
+<div align="center">
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+</div>
+
+<br>
+
 ## 🛠 Tech Stack
 
-<table>
-<tr>
-<td><b>Language</b></td>
-<td>Python</td>
-</tr>
-<tr>
-<td><b>Framework</b></td>
-<td>Django 5.2</td>
-</tr>
-<tr>
-<td><b>API</b></td>
-<td>Django REST Framework 3.17</td>
-</tr>
-<tr>
-<td><b>Authentication</b></td>
-<td>DRF SimpleJWT — access + refresh, rotation & blacklisting</td>
-</tr>
-<tr>
-<td><b>Database</b></td>
-<td>PostgreSQL (via <code>psycopg</code> 3)</td>
-</tr>
-<tr>
-<td><b>Configuration</b></td>
-<td><code>django-environ</code> — 12-factor <code>.env</code></td>
-</tr>
-<tr>
-<td><b>Social Auth</b></td>
-<td>Google Identity (<code>google-auth</code>)</td>
-</tr>
-<tr>
-<td><b>Email</b></td>
-<td>SMTP — OTP delivery</td>
-</tr>
-</table>
+<div align="center">
+
+|                    |                                                           |
+| :----------------- | :-------------------------------------------------------- |
+| **Language**       | Python                                                    |
+| **Framework**      | Django 5.2                                                |
+| **API**            | Django REST Framework 3.17                                |
+| **Authentication** | DRF SimpleJWT — access + refresh, rotation & blacklisting |
+| **Database**       | PostgreSQL (via `psycopg` 3)                              |
+| **Configuration**  | `django-environ` — 12-factor `.env`                       |
+| **Social Auth**    | Google Identity (`google-auth`)                           |
+| **Email**          | SMTP — OTP delivery                                       |
+
+</div>
+
+<br>
+
+<div align="center">
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+</div>
 
 <br>
 
@@ -91,7 +96,7 @@ The codebase is intentionally structured in clear layers — HTTP, validation, b
 <tr>
 <td width="50%" valign="top">
 
-**🔐 Authentication**
+### 🔐 Authentication
 
 - Email + password signup
 - JWT login / logout
@@ -101,7 +106,7 @@ The codebase is intentionally structured in clear layers — HTTP, validation, b
 </td>
 <td width="50%" valign="top">
 
-**📧 Verification & Recovery**
+### 📧 Verification & Recovery
 
 - Hashed, time-limited email OTP
 - 60-second resend cooldown
@@ -113,7 +118,7 @@ The codebase is intentionally structured in clear layers — HTTP, validation, b
 <tr>
 <td width="50%" valign="top">
 
-**🌐 Social Login**
+### 🌐 Social Login
 
 - Sign in with a Google ID token
 - Auto-linked `google_id`
@@ -121,7 +126,7 @@ The codebase is intentionally structured in clear layers — HTTP, validation, b
 </td>
 <td width="50%" valign="top">
 
-**👤 Admin**
+### 👤 Admin
 
 - Dedicated admin login / logout
 - Separate from the standard user flow
@@ -129,6 +134,14 @@ The codebase is intentionally structured in clear layers — HTTP, validation, b
 </td>
 </tr>
 </table>
+
+<br>
+
+<div align="center">
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+</div>
 
 <br>
 
@@ -141,8 +154,10 @@ Request ─▶ views ─▶ serializers ─▶ services ─▶ repositories ─�
           (HTTP)   (validation)   (logic)     (ORM access)
 ```
 
+<div align="center">
+
 | File                  | Responsibility                                                           |
-| --------------------- | ------------------------------------------------------------------------ |
+| :-------------------- | :----------------------------------------------------------------------- |
 | **`views.py`**        | HTTP layer — thin controllers handling request/response & status codes   |
 | **`serializers.py`**  | Input validation & output shaping                                        |
 | **`services.py`**     | Business logic — OTP issuance, verification, token workflows             |
@@ -153,36 +168,15 @@ Request ─▶ views ─▶ serializers ─▶ services ─▶ repositories ─�
 | **`utils.py`**        | Shared helpers — hashing, token generation                               |
 | **`models.py`**       | `User`, `EmailVerificationOTP`, `PasswordResetOTP`, `PasswordResetToken` |
 
+</div>
+
 <br>
 
-## 📁 Project Structure
+<div align="center">
 
-```
-launch-point-backend/
-│
-├── 📂 config/                  # Project configuration
-│   ├── settings.py             # Env-driven settings (DB, JWT, CORS, email)
-│   ├── urls.py                 # Root URLs → mounts /api/auth/
-│   ├── wsgi.py / asgi.py
-│
-├── 📂 apps/
-│   └── 📂 accounts/            # Authentication & user management
-│       ├── models.py
-│       ├── views.py            # HTTP layer
-│       ├── serializers.py      # Validation
-│       ├── services.py         # Business logic
-│       ├── repositories.py     # Data access
-│       ├── permissions.py
-│       ├── validators.py
-│       ├── exceptions.py
-│       ├── utils.py
-│       ├── urls.py
-│       ├── tests.py
-│       └── migrations/
-│
-├── manage.py
-└── requirements.txt
-```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+</div>
 
 <br>
 
@@ -194,6 +188,8 @@ launch-point-backend/
 - PostgreSQL 14+
 - A Google OAuth Client ID (for Google sign-in)
 - SMTP credentials (for OTP emails)
+
+<br>
 
 ### Installation
 
@@ -223,8 +219,10 @@ python manage.py runserver
 
 The API will be live at **`http://127.0.0.1:8000/`** 🎉
 
+<br>
+
 <details>
-<summary><b>📋 Environment Variables (.env)</b></summary>
+<summary><b>📋 &nbsp;Environment Variables (.env)</b></summary>
 
 <br>
 
@@ -257,34 +255,6 @@ DEFAULT_FROM_EMAIL=Launch Point <no-reply@example.com>
 
 <br>
 
-## 🔌 API Reference
-
-> **Base path:** `/api/auth/`
-
-<table>
-<tr>
-<th>Method</th>
-<th>Endpoint</th>
-<th>Description</th>
-<th>Auth</th>
-</tr>
-<tr><td><code>POST</code></td><td><code>/signup/</code></td><td>Register a new user</td><td>🌐 Public</td></tr>
-<tr><td><code>POST</code></td><td><code>/verify-email/</code></td><td>Verify email with OTP</td><td>🌐 Public</td></tr>
-<tr><td><code>POST</code></td><td><code>/resend-verification-otp/</code></td><td>Resend email verification OTP</td><td>🌐 Public</td></tr>
-<tr><td><code>POST</code></td><td><code>/login/</code></td><td>Log in, receive JWT pair</td><td>🌐 Public</td></tr>
-<tr><td><code>POST</code></td><td><code>/logout/</code></td><td>Blacklist refresh token</td><td>🔒 Auth</td></tr>
-<tr><td><code>POST</code></td><td><code>/token/refresh/</code></td><td>Exchange refresh for new access token</td><td>🌐 Public</td></tr>
-<tr><td><code>POST</code></td><td><code>/forgot-password/</code></td><td>Request a password-reset OTP</td><td>🌐 Public</td></tr>
-<tr><td><code>POST</code></td><td><code>/verify-password-reset-otp/</code></td><td>Verify reset OTP, get reset token</td><td>🌐 Public</td></tr>
-<tr><td><code>POST</code></td><td><code>/resend-password-reset-otp/</code></td><td>Resend reset OTP</td><td>🌐 Public</td></tr>
-<tr><td><code>POST</code></td><td><code>/reset-password/</code></td><td>Set a new password with reset token</td><td>🌐 Public</td></tr>
-<tr><td><code>POST</code></td><td><code>/google/</code></td><td>Authenticate with a Google ID token</td><td>🌐 Public</td></tr>
-<tr><td><code>POST</code></td><td><code>/admin/login/</code></td><td>Admin login</td><td>🌐 Public</td></tr>
-<tr><td><code>POST</code></td><td><code>/admin/logout/</code></td><td>Admin logout</td><td>🔒 Auth</td></tr>
-</table>
-
-<sub>Django admin panel is available at <code>/admin/</code>.</sub>
-
 ### 🔑 Authentication
 
 Protected endpoints expect a Bearer token:
@@ -298,22 +268,34 @@ Authorization: Bearer <access_token>
 
 <br>
 
+<div align="center">
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+</div>
+
+<br>
+
 ## 🗃 Data Models
 
+<div align="center">
+
 | Model                      | Purpose                                                                                                                                          |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
 | **`User`**                 | Custom user where **`email`** is the login identifier (no username). Tracks `full_name`, `google_id`, `email_verified`, `is_active`, `is_staff`. |
 | **`EmailVerificationOTP`** | Hashed, expiring OTP for verifying email at signup.                                                                                              |
 | **`PasswordResetOTP`**     | Hashed, expiring OTP for the password-reset flow.                                                                                                |
 | **`PasswordResetToken`**   | Single-use, UUID-backed hashed token issued after OTP verification, used to complete a reset.                                                    |
 
+</div>
+
 <br>
 
-## 🧪 Running Tests
+<div align="center">
 
-```bash
-python manage.py test
-```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+</div>
 
 <br>
 
@@ -331,12 +313,16 @@ Planned modules for the full LMS platform:
 
 <br>
 
----
-
 <div align="center">
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<br>
+<br>
 
 <sub>Built with Django & Django REST Framework · Part of the <b>Launch Point</b> platform</sub>
 
+<br>
 <br>
 
 ⭐ **Star this repo if you find it useful!**
