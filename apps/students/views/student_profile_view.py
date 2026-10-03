@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
@@ -10,6 +12,8 @@ from apps.students.serializers.student_profile_serializer import (
 from apps.students.services.student_profile_service import (
     StudentProfileService,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class StudentProfileView(APIView):
@@ -29,12 +33,22 @@ class StudentProfileView(APIView):
         Retrieve the authenticated student's profile.
         """
 
+        logger.info(
+            "Student requested profile retrieval.",
+            extra={"user_id": request.user.id},
+        )
+
         profile = StudentProfileService.get_profile(
             user=request.user,
         )
 
         serializer = StudentProfileSerializer(
             profile,
+        )
+
+        logger.info(
+            "Student profile retrieved successfully.",
+            extra={"user_id": request.user.id},
         )
 
         return Response(
@@ -46,6 +60,11 @@ class StudentProfileView(APIView):
         """
         Partially update the authenticated student's profile.
         """
+
+        logger.info(
+            "Student requested profile update.",
+            extra={"user_id": request.user.id},
+        )
 
         serializer = StudentProfileSerializer(
             data=request.data,
@@ -63,6 +82,11 @@ class StudentProfileView(APIView):
 
         response_serializer = StudentProfileSerializer(
             profile,
+        )
+
+        logger.info(
+            "Student profile updated successfully.",
+            extra={"user_id": request.user.id},
         )
 
         return Response(
