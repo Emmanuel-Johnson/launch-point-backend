@@ -22,40 +22,38 @@ class InstructorApplication(models.Model):
         related_name="instructor_applications",
     )
 
+    # Professional information submitted for review
     job_title = models.CharField(max_length=150)
-
-    phone_number = models.CharField(max_length=20)
-
+    education = models.CharField(max_length=200, blank=True)
     years_of_experience = models.CharField(
         max_length=20,
         choices=Experience.choices,
     )
-
-    topics_to_teach = models.TextField()
-
+    topics_to_teach = models.JSONField(default=list, blank=True)
     short_bio = models.TextField(max_length=1000)
 
-    motivation = models.TextField(max_length=2000)
-
-    # Snapshot of the links submitted with this application.
+    # Contact and professional links submitted with the application
+    phone_number = models.CharField(max_length=20)
+    location = models.CharField(max_length=150, blank=True)
     linkedin_url = models.URLField(max_length=255, blank=True)
     github_url = models.URLField(max_length=255, blank=True)
-    personal_website = models.URLField(max_length=255, blank=True)
+    portfolio_url = models.URLField(max_length=255, blank=True)
 
+    # Application-only information
+    motivation = models.TextField(max_length=2000)
     resume = models.FileField(
         upload_to="instructor_applications/resumes/",
     )
 
     terms_accepted = models.BooleanField(default=False)
 
+    # Administrative review
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
         default=Status.PENDING,
     )
-
     admin_message = models.TextField(blank=True)
-
     submitted_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -71,7 +69,6 @@ class InstructorApplication(models.Model):
     class Meta:
         db_table = "instructor_applications"
         ordering = ["-submitted_at"]
-
         constraints = [
             models.UniqueConstraint(
                 fields=["user"],
@@ -85,15 +82,29 @@ class InstructorApplication(models.Model):
             ),
         ]
 
-        indexes = [
-            models.Index(
-                fields=["status", "-submitted_at"],
-                name="instr_app_status_date_idx",
-            ),
-        ]
-
     def __str__(self):
         return f"{self.user.email} - {self.status}"
+
+
+class InstructorApplicationDocument(models.Model):
+    application = models.ForeignKey(
+        InstructorApplication,
+        on_delete=models.CASCADE,
+        related_name="supporting_documents",
+    )
+
+    document = models.FileField(
+        upload_to="instructor_applications/documents/",
+    )
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "instructor_application_documents"
+        ordering = ["uploaded_at"]
+
+    def __str__(self):
+        return f"Supporting document - {self.application.user.email}"
 
 
 class InstructorProfile(models.Model):
@@ -103,16 +114,26 @@ class InstructorProfile(models.Model):
         related_name="instructor_profile",
     )
 
-    job_title = models.CharField(max_length=150)
-
-    short_bio = models.TextField(max_length=1000)
-
+    # Instructor-specific public profile
+    job_title = models.CharField(max_length=150, blank=True)
+    short_bio = models.TextField(max_length=1000, blank=True)
+    education = models.CharField(max_length=200, blank=True)
+    occupation = models.CharField(max_length=150, blank=True)
+    location = models.CharField(max_length=150, blank=True)
     years_of_experience = models.CharField(
         max_length=20,
         choices=InstructorApplication.Experience.choices,
+        blank=True,
     )
+    topics_to_teach = models.JSONField(default=list, blank=True)
 
-    topics_to_teach = models.TextField()
+    # Instructor-specific professional links
+    linkedin_url = models.URLField(max_length=255, blank=True)
+    github_url = models.URLField(max_length=255, blank=True)
+    portfolio_url = models.URLField(max_length=255, blank=True)
+
+    # Set when the application is approved
+    became_instructor_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
