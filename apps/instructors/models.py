@@ -118,7 +118,6 @@ class InstructorProfile(models.Model):
     job_title = models.CharField(max_length=150, blank=True)
     short_bio = models.TextField(max_length=1000, blank=True)
     education = models.CharField(max_length=200, blank=True)
-    occupation = models.CharField(max_length=150, blank=True)
     location = models.CharField(max_length=150, blank=True)
     years_of_experience = models.CharField(
         max_length=20,
