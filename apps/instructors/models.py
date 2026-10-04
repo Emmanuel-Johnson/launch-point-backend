@@ -29,7 +29,7 @@ class InstructorApplication(models.Model):
         max_length=20,
         choices=Experience.choices,
     )
-    topics_to_teach = models.JSONField(default=list, blank=True)
+    categories_to_teach = models.JSONField(default=list, blank=True)
     short_bio = models.TextField(max_length=1000)
 
     # Contact and professional links submitted with the application
@@ -125,7 +125,7 @@ class InstructorProfile(models.Model):
         choices=InstructorApplication.Experience.choices,
         blank=True,
     )
-    topics_to_teach = models.JSONField(default=list, blank=True)
+    categories_to_teach = models.JSONField(default=list, blank=True)
 
     # Instructor-specific professional links
     linkedin_url = models.URLField(max_length=255, blank=True)
