@@ -14,6 +14,11 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
+    profile_image = serializers.ImageField(
+        source="user.profile_image",
+        required=False,
+    )
+
     remove_profile_image = serializers.BooleanField(
         write_only=True,
         required=False,

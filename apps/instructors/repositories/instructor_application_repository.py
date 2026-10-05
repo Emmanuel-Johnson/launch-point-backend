@@ -1,7 +1,9 @@
-from apps.instructors.models import InstructorApplication
+from apps.accounts.models import User
 
 
 class InstructorApplicationRepository:
+    """Repository for instructor application database operations."""
+
     @staticmethod
-    def create_application(application_data):
-        return InstructorApplication.objects.create(**application_data)
+    def get_application_form_data(user):
+        return User.objects.select_related("student_profile").filter(id=user.id).first()

@@ -1,13 +1,13 @@
 from django.urls import path
 
 from apps.instructors.views.instructor_application_view import (
-    InstructorApplicationCreateView,
+    InstructorApplicationFormView,
 )
 
 urlpatterns = [
     path(
-        "applications/",
-        InstructorApplicationCreateView.as_view(),
-        name="instructor-application-create",
+        "application/",
+        InstructorApplicationFormView.as_view(),
+        name="instructor-application-form",
     ),
 ]

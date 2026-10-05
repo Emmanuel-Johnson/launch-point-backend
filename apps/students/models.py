@@ -15,12 +15,6 @@ class StudentProfile(models.Model):
         related_name="student_profile",
     )
 
-    profile_image = models.ImageField(
-        upload_to="profile_images/",
-        default="profile_images/default_profile.png",
-        blank=True,
-    )
-
     bio = models.TextField(
         blank=True,
         max_length=500,

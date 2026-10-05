@@ -4,10 +4,7 @@ from apps.accounts.models import User
 
 
 class StudentListSerializer(serializers.ModelSerializer):
-    profile_image = serializers.ImageField(
-        source="student_profile.profile_image",
-        read_only=True,
-    )
+    profile_image = serializers.ImageField(read_only=True)
 
     class Meta:
         model = User
@@ -22,10 +19,7 @@ class StudentListSerializer(serializers.ModelSerializer):
 
 
 class StudentDetailSerializer(serializers.ModelSerializer):
-    profile_image = serializers.ImageField(
-        source="student_profile.profile_image",
-        read_only=True,
-    )
+    profile_image = serializers.ImageField(read_only=True)
 
     bio = serializers.CharField(
         source="student_profile.bio",

@@ -298,21 +298,27 @@ def login_user(validated_data):
 
     user = get_user_by_email(email)
 
+    if not user:
+        logger.warning("Login failed")
+        raise InvalidCredentialsException()
+
+    if not user.is_active:
+        logger.warning(
+            "Authentication failed: inactive user user_id=%s",
+            user.id,
+        )
+        raise InactiveAccountException()
+
     # Superusers are barred from the standard login (admin_login_user only);
     # all conditions collapse into one error to avoid leaking which failed.
     if (
-        not user
-        or not user.check_password(password)
+        not user.check_password(password)
         or not user.email_verified
         or not user.is_active
         or user.is_superuser
     ):
         logger.warning("Login failed")
         raise InvalidCredentialsException()
-
-    if not user.is_active:
-        logger.warning("Login failed: inactive account")
-        raise InactiveAccountException()
 
     tokens = generate_tokens_for_user(user)
 
@@ -325,12 +331,7 @@ def login_user(validated_data):
             "full_name": user.full_name,
             "email": user.email,
             "role": user.role,
-            "profile_image": (
-                user.student_profile.profile_image.url
-                if hasattr(user, "student_profile")
-                and user.student_profile.profile_image
-                else None
-            ),
+            "profile_image": (user.profile_image.url if user.profile_image else None),
         },
         "tokens": tokens,
     }
@@ -705,12 +706,7 @@ def google_authenticate(id_token_string):
             "full_name": user.full_name,
             "email": user.email,
             "role": user.role,
-            "profile_image": (
-                user.student_profile.profile_image.url
-                if hasattr(user, "student_profile")
-                and user.student_profile.profile_image
-                else None
-            ),
+            "profile_image": (user.profile_image.url if user.profile_image else None),
         },
         "tokens": tokens,
     }

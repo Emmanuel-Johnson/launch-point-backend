@@ -1,18 +1,21 @@
-from rest_framework import generics
-from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.instructors.serializers.instructor_application_serializer import (
-    InstructorApplicationSerializer,
+    InstructorApplicationFormSerializer,
+)
+from apps.instructors.services.instructor_application_service import (
+    InstructorApplicationService,
 )
 
 
-class InstructorApplicationCreateView(generics.CreateAPIView):
-    serializer_class = InstructorApplicationSerializer
+class InstructorApplicationFormView(APIView):
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context["request"] = self.request
-        return context
+    def get(self, request):
+        user = InstructorApplicationService.get_application_form_data(user=request.user)
+
+        serializer = InstructorApplicationFormSerializer(user)
+
+        return Response(serializer.data)
