@@ -78,6 +78,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     full_name = models.CharField(max_length=150)
 
+    profile_image = models.ImageField(
+        upload_to="profile_images/",
+        default="profile_images/default_profile.png",
+        blank=True,
+    )
+
     email = models.EmailField(unique=True, max_length=255)
 
     role = models.CharField(
