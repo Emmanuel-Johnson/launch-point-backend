@@ -13,7 +13,7 @@ class InstructorApplicationSerializer(serializers.ModelSerializer):
         model = InstructorApplication
         fields = [
             "id",
-            "job_title",
+            "occupation",
             "education",
             "years_of_experience",
             "categories_to_teach",
