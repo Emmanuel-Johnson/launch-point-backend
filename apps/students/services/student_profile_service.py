@@ -68,7 +68,7 @@ class StudentProfileService:
                 "Removing profile image; resetting to default.",
                 extra={"user_id": user.id},
             )
-            data["profile_image"] = StudentProfileService.DEFAULT_PROFILE_IMAGE
+            user_data["profile_image"] = StudentProfileService.DEFAULT_PROFILE_IMAGE
 
         updated_profile = StudentProfileRepository.update(
             profile=profile,

@@ -20,7 +20,7 @@ class StudentProfileRepository:
     def update(profile, profile_data, user_data=None):
         """Update student profile and related user data."""
 
-        old_image = profile.profile_image
+        old_image = profile.user.profile_image
         old_image_name = old_image.name if old_image else None
         old_image_storage = old_image.storage if old_image else None
 
@@ -39,7 +39,7 @@ class StudentProfileRepository:
             profile.user.save()
 
         # Get the current image after saving.
-        new_image = profile.profile_image
+        new_image = profile.user.profile_image
         new_image_name = new_image.name if new_image else None
 
         # Delete the previous uploaded image only if it was replaced.
