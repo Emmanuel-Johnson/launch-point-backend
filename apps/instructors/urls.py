@@ -1,6 +1,8 @@
 from django.urls import path
 
-from apps.instructors.views import InstructorApplicationFormView
+from apps.instructors.views.instructor_application_view import (
+    InstructorApplicationFormView,
+)
 
 urlpatterns = [
     path(
