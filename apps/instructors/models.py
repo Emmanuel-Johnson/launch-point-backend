@@ -22,6 +22,17 @@ class InstructorApplication(models.Model):
         related_name="instructor_applications",
     )
 
+    full_name = models.CharField(
+        max_length=150,
+        default="Unknown",
+    )
+
+    profile_image = models.ImageField(
+        upload_to="instructor_applications/profile_images/",
+        null=True,
+        blank=True,
+    )
+
     # Professional information submitted for review
     occupation = models.CharField(max_length=150, blank=True)
     education = models.CharField(max_length=200, blank=True)
@@ -114,6 +125,18 @@ class InstructorProfile(models.Model):
         related_name="instructor_profile",
     )
 
+    # Instructor identity
+    full_name = models.CharField(
+        max_length=150,
+        default="Unknown",
+    )
+
+    profile_image = models.ImageField(
+        upload_to="instructor_profiles/",
+        null=True,
+        blank=True,
+    )
+
     # Instructor-specific public profile
     occupation = models.CharField(max_length=150, blank=True)
     short_bio = models.TextField(max_length=1000, blank=True)
@@ -141,4 +164,4 @@ class InstructorProfile(models.Model):
         db_table = "instructor_profiles"
 
     def __str__(self):
-        return f"Instructor Profile - {self.user.email}"
+        return f"Instructor Profile - {self.full_name}"
