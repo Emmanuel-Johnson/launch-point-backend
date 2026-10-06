@@ -11,11 +11,15 @@ from apps.instructors.services.instructor_application_service import (
 
 
 class InstructorApplicationFormView(APIView):
+    """API view for instructor application form data."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = InstructorApplicationService.get_application_form_data(user=request.user)
+        data = InstructorApplicationService.get_application_form_data(
+            user=request.user,
+        )
 
-        serializer = InstructorApplicationFormSerializer(user)
+        serializer = InstructorApplicationFormSerializer(data)
 
         return Response(serializer.data)

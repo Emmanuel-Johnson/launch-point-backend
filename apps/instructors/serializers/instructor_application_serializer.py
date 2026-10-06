@@ -1,7 +1,9 @@
 from rest_framework import serializers
 
+from apps.categories.models import Category
 
-class InstructorApplicationFormSerializer(serializers.Serializer):
+
+class InstructorApplicationUserSerializer(serializers.Serializer):
     full_name = serializers.CharField(
         read_only=True,
     )
@@ -49,4 +51,24 @@ class InstructorApplicationFormSerializer(serializers.Serializer):
         read_only=True,
         allow_blank=True,
         source="student_profile.portfolio_url",
+    )
+
+
+class InstructorApplicationCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = (
+            "id",
+            "name",
+        )
+
+
+class InstructorApplicationFormSerializer(serializers.Serializer):
+    user = InstructorApplicationUserSerializer(
+        read_only=True,
+    )
+
+    categories = InstructorApplicationCategorySerializer(
+        many=True,
+        read_only=True,
     )
