@@ -68,7 +68,7 @@ class InstructorApplication(models.Model):
         choices=Status.choices,
         default=Status.PENDING,
     )
-    admin_message = models.TextField(blank=True)
+    admin_message = models.TextField(null=True, blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)

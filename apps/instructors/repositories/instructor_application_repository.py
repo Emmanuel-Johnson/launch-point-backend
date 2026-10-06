@@ -1,5 +1,8 @@
 from apps.accounts.models import User
-from apps.categories.models import Category
+from apps.instructors.models import (
+    InstructorApplication,
+    InstructorApplicationDocument,
+)
 
 
 class InstructorApplicationRepository:
@@ -10,8 +13,26 @@ class InstructorApplicationRepository:
         return User.objects.select_related("student_profile").filter(id=user.id).first()
 
     @staticmethod
-    def get_active_categories():
-        return Category.objects.filter(is_active=True).values(
-            "id",
-            "name",
+    def get_pending_application(user):
+        return InstructorApplication.objects.filter(
+            user=user,
+            status=InstructorApplication.Status.PENDING,
+        ).first()
+
+    @staticmethod
+    def create_application(user, **data):
+        return InstructorApplication.objects.create(
+            user=user,
+            **data,
+        )
+
+    @staticmethod
+    def set_application_categories(application, categories):
+        application.categories_to_teach.set(categories)
+
+    @staticmethod
+    def create_supporting_document(application, document):
+        return InstructorApplicationDocument.objects.create(
+            application=application,
+            document=document,
         )
