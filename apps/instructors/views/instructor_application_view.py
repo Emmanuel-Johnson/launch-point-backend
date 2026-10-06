@@ -1,8 +1,10 @@
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.instructors.serializers.instructor_application_serializer import (
+    InstructorApplicationCreateSerializer,
     InstructorApplicationFormSerializer,
 )
 from apps.instructors.services.instructor_application_service import (
@@ -11,11 +13,50 @@ from apps.instructors.services.instructor_application_service import (
 
 
 class InstructorApplicationFormView(APIView):
+    """API view for instructor application form data."""
+
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
-        user = InstructorApplicationService.get_application_form_data(user=request.user)
+        data = InstructorApplicationService.get_application_form_data(
+            user=request.user,
+        )
 
-        serializer = InstructorApplicationFormSerializer(user)
+        serializer = InstructorApplicationFormSerializer(data)
 
         return Response(serializer.data)
+
+    def post(self, request):
+        serializer = InstructorApplicationCreateSerializer(
+            data=request.data,
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        supporting_files = request.FILES.getlist(
+            "supporting_files",
+        )
+
+        if len(supporting_files) > 5:
+            return Response(
+                {
+                    "detail": "You can upload up to 5 supporting files.",
+                },
+                status=400,
+            )
+
+        application = InstructorApplicationService.submit_application(
+            user=request.user,
+            validated_data=serializer.validated_data,
+            supporting_files=supporting_files,
+        )
+
+        return Response(
+            {
+                "id": application.id,
+                "status": application.status,
+                "submitted_at": application.submitted_at,
+            },
+            status=201,
+        )

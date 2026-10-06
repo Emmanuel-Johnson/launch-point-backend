@@ -22,6 +22,17 @@ class InstructorApplication(models.Model):
         related_name="instructor_applications",
     )
 
+    full_name = models.CharField(
+        max_length=150,
+        default="Unknown",
+    )
+
+    profile_image = models.ImageField(
+        upload_to="instructor_applications/profile_images/",
+        null=True,
+        blank=True,
+    )
+
     # Professional information submitted for review
     occupation = models.CharField(max_length=150, blank=True)
     education = models.CharField(max_length=200, blank=True)
@@ -29,7 +40,11 @@ class InstructorApplication(models.Model):
         max_length=20,
         choices=Experience.choices,
     )
-    categories_to_teach = models.JSONField(default=list, blank=True)
+    categories_to_teach = models.ManyToManyField(
+        "categories.Category",
+        related_name="instructor_applications",
+        blank=True,
+    )
     short_bio = models.TextField(max_length=1000)
 
     # Contact and professional links submitted with the application
@@ -53,7 +68,7 @@ class InstructorApplication(models.Model):
         choices=Status.choices,
         default=Status.PENDING,
     )
-    admin_message = models.TextField(blank=True)
+    admin_message = models.TextField(null=True, blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -114,6 +129,18 @@ class InstructorProfile(models.Model):
         related_name="instructor_profile",
     )
 
+    # Instructor identity
+    full_name = models.CharField(
+        max_length=150,
+        default="Unknown",
+    )
+
+    profile_image = models.ImageField(
+        upload_to="instructor_profiles/",
+        null=True,
+        blank=True,
+    )
+
     # Instructor-specific public profile
     occupation = models.CharField(max_length=150, blank=True)
     short_bio = models.TextField(max_length=1000, blank=True)
@@ -124,7 +151,11 @@ class InstructorProfile(models.Model):
         choices=InstructorApplication.Experience.choices,
         blank=True,
     )
-    categories_to_teach = models.JSONField(default=list, blank=True)
+    categories_to_teach = models.ManyToManyField(
+        "categories.Category",
+        related_name="instructor_profiles",
+        blank=True,
+    )
 
     # Instructor-specific professional links
     linkedin_url = models.URLField(max_length=255, blank=True)
@@ -141,4 +172,4 @@ class InstructorProfile(models.Model):
         db_table = "instructor_profiles"
 
     def __str__(self):
-        return f"Instructor Profile - {self.user.email}"
+        return f"Instructor Profile - {self.full_name}"
