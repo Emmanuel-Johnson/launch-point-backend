@@ -32,19 +32,13 @@ class InstructorApplicationFormView(APIView):
             data=request.data,
         )
 
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(
+            raise_exception=True,
+        )
 
         supporting_files = request.FILES.getlist(
             "supporting_files",
         )
-
-        if len(supporting_files) > 5:
-            return Response(
-                {
-                    "detail": "You can upload up to 5 supporting files.",
-                },
-                status=400,
-            )
 
         application = InstructorApplicationService.submit_application(
             user=request.user,
