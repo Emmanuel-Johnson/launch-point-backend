@@ -48,6 +48,8 @@ class InstructorApplicationFormView(APIView):
 
         return Response(
             {
+                "message": "Your instructor application has been submitted "
+                "successfully.",
                 "id": application.id,
                 "status": application.status,
                 "submitted_at": application.submitted_at,
