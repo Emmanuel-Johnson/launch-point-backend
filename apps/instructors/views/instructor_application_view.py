@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from apps.instructors.serializers.instructor_application_serializer import (
     InstructorApplicationCreateSerializer,
     InstructorApplicationFormSerializer,
+    InstructorApplicationListSerializer,
 )
 from apps.instructors.services.instructor_application_service import (
     InstructorApplicationService,
@@ -56,3 +57,21 @@ class InstructorApplicationFormView(APIView):
             },
             status=201,
         )
+
+
+class InstructorApplicationListView(APIView):
+    """API view for the current user's instructor applications."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        applications = InstructorApplicationService.get_user_applications(
+            user=request.user
+        )
+
+        serializer = InstructorApplicationListSerializer(
+            applications,
+            many=True,
+        )
+
+        return Response(serializer.data)

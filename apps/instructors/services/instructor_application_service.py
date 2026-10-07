@@ -176,3 +176,7 @@ class InstructorApplicationService:
             )
 
         return application
+
+    @staticmethod
+    def get_user_applications(user):
+        return InstructorApplicationRepository.get_user_applications(user=user)

@@ -431,3 +431,19 @@ class InstructorApplicationCreateSerializer(serializers.ModelSerializer):
             )
 
         return value
+
+
+class InstructorApplicationListSerializer(serializers.ModelSerializer):
+    categories = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InstructorApplication
+        fields = (
+            "id",
+            "categories",
+            "submitted_at",
+            "status",
+        )
+
+    def get_categories(self, obj):
+        return list(obj.categories_to_teach.values_list("name", flat=True))
