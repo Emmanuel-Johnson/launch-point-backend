@@ -91,7 +91,7 @@ class InstructorApplicationCreateSerializer(serializers.ModelSerializer):
             "education",
             "years_of_experience",
             "categories_to_teach",
-            "short_bio",
+            "professional_bio",
             "phone_number",
             "location",
             "linkedin_url",

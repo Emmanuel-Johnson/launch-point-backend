@@ -45,7 +45,7 @@ class InstructorApplication(models.Model):
         related_name="instructor_applications",
         blank=True,
     )
-    short_bio = models.TextField(max_length=1000)
+    professional_bio = models.TextField(max_length=1000)
 
     # Contact and professional links submitted with the application
     phone_number = models.CharField(max_length=20)
@@ -143,7 +143,7 @@ class InstructorProfile(models.Model):
 
     # Instructor-specific public profile
     occupation = models.CharField(max_length=150, blank=True)
-    short_bio = models.TextField(max_length=1000, blank=True)
+    professional_bio = models.TextField(max_length=1000, blank=True)
     education = models.CharField(max_length=200, blank=True)
     location = models.CharField(max_length=150, blank=True)
     years_of_experience = models.CharField(
