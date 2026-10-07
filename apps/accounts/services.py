@@ -700,7 +700,8 @@ def google_authenticate(id_token_string):
     )
 
     return {
-        "message": "Google authentication successful.",
+        "message": "Welcome to Launch Point! Your account is ready. "
+        "Let’s turn your goals into progress.",
         "user": {
             "id": user.id,
             "full_name": user.full_name,
