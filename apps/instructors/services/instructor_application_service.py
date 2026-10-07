@@ -180,3 +180,15 @@ class InstructorApplicationService:
     @staticmethod
     def get_user_applications(user):
         return InstructorApplicationRepository.get_user_applications(user=user)
+
+    @staticmethod
+    def get_user_application_detail(user, application_id):
+        application = InstructorApplicationRepository.get_user_application_detail(
+            user=user,
+            application_id=application_id,
+        )
+
+        if not application:
+            raise ValidationError({"detail": "Instructor application not found."})
+
+        return application

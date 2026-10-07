@@ -447,3 +447,92 @@ class InstructorApplicationListSerializer(serializers.ModelSerializer):
 
     def get_categories(self, obj):
         return list(obj.categories_to_teach.values_list("name", flat=True))
+
+
+class InstructorApplicationDetailSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        source="user.email",
+        read_only=True,
+    )
+
+    categories_to_teach = serializers.SerializerMethodField()
+
+    resume_url = serializers.SerializerMethodField()
+    resume_name = serializers.SerializerMethodField()
+
+    supporting_files = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InstructorApplication
+        fields = (
+            "id",
+            "status",
+            "full_name",
+            "email",
+            "phone_number",
+            "location",
+            "profile_image",
+            "occupation",
+            "education",
+            "years_of_experience",
+            "categories_to_teach",
+            "professional_bio",
+            "motivation",
+            "portfolio_url",
+            "linkedin_url",
+            "github_url",
+            "submitted_at",
+            "resume_url",
+            "resume_name",
+            "supporting_files",
+            "admin_message",
+        )
+
+    def get_categories_to_teach(self, obj):
+        return list(
+            obj.categories_to_teach.values_list(
+                "name",
+                flat=True,
+            )
+        )
+
+    def get_resume_url(self, obj):
+        if not obj.resume:
+            return None
+
+        request = self.context.get("request")
+
+        if request:
+            return request.build_absolute_uri(obj.resume.url)
+
+        return obj.resume.url
+
+    def get_resume_name(self, obj):
+        if not obj.resume:
+            return None
+
+        return obj.resume.name.split("/")[-1]
+
+    def get_supporting_files(self, obj):
+        request = self.context.get("request")
+
+        files = []
+
+        for document in obj.supporting_documents.all():
+            if not document.document:
+                continue
+
+            url = document.document.url
+
+            if request:
+                url = request.build_absolute_uri(url)
+
+            files.append(
+                {
+                    "id": document.id,
+                    "name": document.document.name.split("/")[-1],
+                    "url": url,
+                }
+            )
+
+        return files
