@@ -55,7 +55,7 @@ class InstructorApplication(models.Model):
     portfolio_url = models.URLField(max_length=255, blank=True)
 
     # Application-only information
-    motivation = models.TextField(max_length=2000)
+    motivation = models.TextField(max_length=1000)
     resume = models.FileField(
         upload_to="instructor_applications/resumes/",
     )
