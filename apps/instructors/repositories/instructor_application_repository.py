@@ -36,3 +36,25 @@ class InstructorApplicationRepository:
             application=application,
             document=document,
         )
+
+    @staticmethod
+    def get_user_applications(user):
+        return (
+            InstructorApplication.objects.filter(user=user)
+            .prefetch_related("categories_to_teach")
+            .order_by("-submitted_at")
+        )
+
+    @staticmethod
+    def get_user_application_detail(user, application_id):
+        return (
+            InstructorApplication.objects.filter(
+                id=application_id,
+                user=user,
+            )
+            .prefetch_related(
+                "categories_to_teach",
+                "supporting_documents",
+            )
+            .first()
+        )
