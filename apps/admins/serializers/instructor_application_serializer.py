@@ -14,6 +14,7 @@ class AdminInstructorApplicationListSerializer(serializers.ModelSerializer):
             "id",
             "full_name",
             "email",
+            "profile_image",
             "occupation",
             "years_of_experience",
             "status",

@@ -19,6 +19,7 @@ class AdminInstructorApplicationListView(APIView):
         serializer = AdminInstructorApplicationListSerializer(
             applications,
             many=True,
+            context={"request": request},
         )
 
         return Response(serializer.data)
