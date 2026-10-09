@@ -1,5 +1,8 @@
 from django.urls import path
 
+from apps.admins.views.instructor_application_view import (
+    AdminInstructorApplicationListView,
+)
 from apps.admins.views.student_view import (
     AdminStudentDetailView,
     AdminStudentListView,
@@ -21,5 +24,10 @@ urlpatterns = [
         "students/<int:student_id>/status/",
         AdminStudentStatusView.as_view(),
         name="admin-student-status",
+    ),
+    path(
+        "instructor-applications/",
+        AdminInstructorApplicationListView.as_view(),
+        name="admin-instructor-application-list",
     ),
 ]
