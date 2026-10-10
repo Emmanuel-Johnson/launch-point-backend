@@ -49,3 +49,26 @@ class InstructorApplicationRepository:
     @staticmethod
     def get_application_for_rejection(application_id):
         return InstructorApplication.objects.filter(id=application_id).first()
+
+    @staticmethod
+    def approve_application(application, admin, admin_message):
+        application.status = InstructorApplication.Status.APPROVED
+        application.admin_message = admin_message
+        application.reviewed_at = timezone.now()
+        application.reviewed_by = admin
+
+        application.save(
+            update_fields=[
+                "status",
+                "admin_message",
+                "reviewed_at",
+                "reviewed_by",
+                "updated_at",
+            ]
+        )
+
+        return application
+
+    @staticmethod
+    def get_application_for_approval(application_id):
+        return InstructorApplication.objects.filter(id=application_id).first()

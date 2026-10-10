@@ -31,3 +31,21 @@ class InstructorApplicationService:
             admin=admin,
             admin_message=admin_message,
         )
+
+    @staticmethod
+    def approve_application(application_id, admin, admin_message):
+        application = InstructorApplicationRepository.get_application_for_approval(
+            application_id
+        )
+
+        if application is None:
+            raise NotFound("Instructor application not found.")
+
+        if application.status != "pending":
+            raise ValidationError("Only pending applications can be approved.")
+
+        return InstructorApplicationRepository.approve_application(
+            application=application,
+            admin=admin,
+            admin_message=admin_message,
+        )
