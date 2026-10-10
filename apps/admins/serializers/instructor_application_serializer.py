@@ -110,3 +110,12 @@ class AdminInstructorApplicationDetailSerializer(serializers.ModelSerializer):
             )
 
         return files
+
+
+class AdminInstructorApplicationRejectSerializer(serializers.Serializer):
+    admin_message = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        trim_whitespace=True,
+        max_length=2000,
+    )

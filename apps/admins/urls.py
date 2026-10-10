@@ -3,6 +3,7 @@ from django.urls import path
 from apps.admins.views.instructor_application_view import (
     AdminInstructorApplicationDetailView,
     AdminInstructorApplicationListView,
+    AdminInstructorApplicationRejectView,
 )
 from apps.admins.views.student_view import (
     AdminStudentDetailView,
@@ -35,5 +36,10 @@ urlpatterns = [
         "instructor-applications/<int:application_id>/",
         AdminInstructorApplicationDetailView.as_view(),
         name="admin-instructor-application-detail",
+    ),
+    path(
+        "instructor-applications/<int:application_id>/reject/",
+        AdminInstructorApplicationRejectView.as_view(),
+        name="admin-reject-instructor-application",
     ),
 ]
