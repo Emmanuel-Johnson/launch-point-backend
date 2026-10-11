@@ -58,3 +58,23 @@ class InstructorApplicationRepository:
             )
             .first()
         )
+
+    @staticmethod
+    def mark_dashboard_as_opened(application):
+        application.is_dashboard_opened = True
+
+        application.save(
+            update_fields=[
+                "is_dashboard_opened",
+                "updated_at",
+            ]
+        )
+
+        return application
+
+    @staticmethod
+    def get_approved_application_for_user(user):
+        return InstructorApplication.objects.filter(
+            user=user,
+            status=InstructorApplication.Status.APPROVED,
+        ).first()

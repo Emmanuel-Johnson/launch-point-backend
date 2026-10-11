@@ -1,3 +1,4 @@
+from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -95,3 +96,12 @@ class InstructorApplicationDetailView(APIView):
         )
 
         return Response(serializer.data)
+
+
+class InstructorDashboardOpenedView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        InstructorApplicationService.mark_dashboard_as_opened(user=request.user)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

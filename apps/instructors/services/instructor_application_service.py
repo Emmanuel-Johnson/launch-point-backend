@@ -192,3 +192,14 @@ class InstructorApplicationService:
             raise ValidationError({"detail": "Instructor application not found."})
 
         return application
+
+    @staticmethod
+    def mark_dashboard_as_opened(user):
+        application = InstructorApplicationRepository.get_approved_application_for_user(
+            user
+        )
+
+        if not application:
+            raise ValidationError("No approved instructor application found.")
+
+        return InstructorApplicationRepository.mark_dashboard_as_opened(application)
