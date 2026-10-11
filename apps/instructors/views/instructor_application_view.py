@@ -104,4 +104,10 @@ class InstructorDashboardOpenedView(APIView):
     def post(self, request):
         InstructorApplicationService.mark_dashboard_as_opened(user=request.user)
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {
+                "message": "Welcome to your Instructor Dashboard! Start sharing "
+                "your knowledge and inspiring learners."
+            },
+            status=status.HTTP_200_OK,
+        )
