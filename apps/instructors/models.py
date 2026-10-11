@@ -81,6 +81,8 @@ class InstructorApplication(models.Model):
         related_name="reviewed_instructor_applications",
     )
 
+    is_dashboard_opened = models.BooleanField(default=False)
+
     class Meta:
         db_table = "instructor_applications"
         ordering = ["-submitted_at"]

@@ -443,6 +443,7 @@ class InstructorApplicationListSerializer(serializers.ModelSerializer):
             "categories",
             "submitted_at",
             "status",
+            "is_dashboard_opened",
         )
 
     def get_categories(self, obj):
@@ -467,6 +468,7 @@ class InstructorApplicationDetailSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "status",
+            "is_dashboard_opened",
             "full_name",
             "email",
             "phone_number",

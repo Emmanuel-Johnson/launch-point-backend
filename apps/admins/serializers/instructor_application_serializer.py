@@ -119,3 +119,12 @@ class AdminInstructorApplicationRejectSerializer(serializers.Serializer):
         trim_whitespace=True,
         max_length=2000,
     )
+
+
+class AdminInstructorApplicationApproveSerializer(serializers.Serializer):
+    admin_message = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        trim_whitespace=True,
+        max_length=2000,
+    )

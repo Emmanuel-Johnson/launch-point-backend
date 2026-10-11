@@ -4,6 +4,7 @@ from apps.instructors.views.instructor_application_view import (
     InstructorApplicationDetailView,
     InstructorApplicationFormView,
     InstructorApplicationListView,
+    InstructorDashboardOpenedView,
 )
 
 urlpatterns = [
@@ -20,5 +21,10 @@ urlpatterns = [
     path(
         "applications/<int:application_id>/",
         InstructorApplicationDetailView.as_view(),
+    ),
+    path(
+        "dashboard/opened/",
+        InstructorDashboardOpenedView.as_view(),
+        name="instructor-dashboard-opened",
     ),
 ]
