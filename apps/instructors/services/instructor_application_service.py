@@ -3,6 +3,7 @@ from pathlib import Path
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 
+from apps.accounts.models import User
 from apps.categories.repositories import CategoryRepository
 from apps.instructors.repositories.instructor_application_repository import (
     InstructorApplicationRepository,
@@ -202,4 +203,12 @@ class InstructorApplicationService:
         if not application:
             raise ValidationError("No approved instructor application found.")
 
-        return InstructorApplicationRepository.mark_dashboard_as_opened(application)
+        InstructorApplicationRepository.mark_dashboard_as_opened(application)
+
+        if user.role != User.Role.INSTRUCTOR:
+            InstructorApplicationRepository.update_user_role(
+                user=user,
+                role=User.Role.INSTRUCTOR,
+            )
+
+        return application

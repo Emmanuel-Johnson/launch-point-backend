@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.accounts.models import User
 from apps.instructors.serializers.instructor_application_serializer import (
     InstructorApplicationCreateSerializer,
     InstructorApplicationDetailSerializer,
@@ -102,12 +103,17 @@ class InstructorDashboardOpenedView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        InstructorApplicationService.mark_dashboard_as_opened(user=request.user)
+        InstructorApplicationService.mark_dashboard_as_opened(
+            user=request.user,
+        )
 
         return Response(
             {
-                "message": "Welcome to your Instructor Dashboard! Start sharing "
-                "your knowledge and inspiring learners."
+                "message": (
+                    "Welcome to your Instructor Dashboard! "
+                    "Start sharing your knowledge and inspiring learners."
+                ),
+                "role": User.Role.INSTRUCTOR,
             },
             status=status.HTTP_200_OK,
         )

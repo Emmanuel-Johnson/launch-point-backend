@@ -13,7 +13,6 @@ class StudentRepository:
         return (
             User.objects.select_related("student_profile")
             .filter(
-                role=User.Role.STUDENT,
                 email_verified=True,
             )
             .order_by("-date_joined")
@@ -25,7 +24,6 @@ class StudentRepository:
             User.objects.select_related("student_profile")
             .filter(
                 id=student_id,
-                role=User.Role.STUDENT,
                 email_verified=True,
             )
             .first()
