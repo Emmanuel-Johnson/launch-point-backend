@@ -78,9 +78,3 @@ class InstructorApplicationRepository:
             user=user,
             status=InstructorApplication.Status.APPROVED,
         ).first()
-
-    @staticmethod
-    def update_user_role(user, role):
-        user.role = role
-        user.save(update_fields=["role", "updated_at"])
-        return user
