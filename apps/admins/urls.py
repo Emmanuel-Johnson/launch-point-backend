@@ -6,6 +6,10 @@ from apps.admins.views.instructor_application_view import (
     AdminInstructorApplicationListView,
     AdminInstructorApplicationRejectView,
 )
+from apps.admins.views.instructor_view import (
+    AdminInstructorDetailView,
+    AdminInstructorListView,
+)
 from apps.admins.views.student_view import (
     AdminStudentDetailView,
     AdminStudentListView,
@@ -47,5 +51,15 @@ urlpatterns = [
         "instructor-applications/<int:application_id>/approve/",
         AdminInstructorApplicationApproveView.as_view(),
         name="admin-approve-instructor-application",
+    ),
+    path(
+        "instructors/",
+        AdminInstructorListView.as_view(),
+        name="admin-instructor-list",
+    ),
+    path(
+        "instructors/<int:instructor_id>/",
+        AdminInstructorDetailView.as_view(),
+        name="admin-instructor-detail",
     ),
 ]
