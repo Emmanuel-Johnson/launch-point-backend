@@ -202,4 +202,6 @@ class InstructorApplicationService:
         if not application:
             raise ValidationError("No approved instructor application found.")
 
-        return InstructorApplicationRepository.mark_dashboard_as_opened(application)
+        InstructorApplicationRepository.mark_dashboard_as_opened(application)
+
+        return application

@@ -1,6 +1,6 @@
 from django.utils import timezone
 
-from apps.instructors.models import InstructorApplication
+from apps.instructors.models import InstructorApplication, InstructorProfile
 
 
 class InstructorApplicationRepository:
@@ -72,3 +72,37 @@ class InstructorApplicationRepository:
     @staticmethod
     def get_application_for_approval(application_id):
         return InstructorApplication.objects.filter(id=application_id).first()
+
+    @staticmethod
+    def create_instructor_profile_from_application(application):
+        profile, created = InstructorProfile.objects.get_or_create(
+            user=application.user,
+            defaults={
+                "full_name": application.full_name,
+                "profile_image": (
+                    application.profile_image.name
+                    if application.profile_image
+                    else None
+                ),
+                "occupation": application.occupation,
+                "professional_bio": application.professional_bio,
+                "education": application.education,
+                "location": application.location,
+                "years_of_experience": application.years_of_experience,
+                "linkedin_url": application.linkedin_url,
+                "github_url": application.github_url,
+                "portfolio_url": application.portfolio_url,
+                "became_instructor_at": application.reviewed_at,
+            },
+        )
+
+        if created:
+            profile.categories_to_teach.set(application.categories_to_teach.all())
+
+        return profile
+
+    @staticmethod
+    def update_user_role(user, role):
+        user.role = role
+        user.save(update_fields=["role", "updated_at"])
+        return user

@@ -6,6 +6,9 @@ from apps.instructors.views.instructor_application_view import (
     InstructorApplicationListView,
     InstructorDashboardOpenedView,
 )
+from apps.instructors.views.instructor_profile_view import (
+    InstructorProfileView,
+)
 
 urlpatterns = [
     path(
@@ -27,4 +30,5 @@ urlpatterns = [
         InstructorDashboardOpenedView.as_view(),
         name="instructor-dashboard-opened",
     ),
+    path("profile/", InstructorProfileView.as_view(), name="instructor-profile"),
 ]
