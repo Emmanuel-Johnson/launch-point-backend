@@ -1,9 +1,10 @@
 import logging
 
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.accounts.permissions import IsAdmin
 from apps.admins.serializers.student_serializer import (
     StudentDetailSerializer,
     StudentListSerializer,
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class AdminStudentListView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request):
         logger.info(
@@ -39,7 +40,7 @@ class AdminStudentListView(APIView):
 
 
 class AdminStudentDetailView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request, student_id):
         logger.info(
@@ -60,7 +61,7 @@ class AdminStudentDetailView(APIView):
 
 
 class AdminStudentStatusView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def patch(self, request, student_id):
         logger.info(

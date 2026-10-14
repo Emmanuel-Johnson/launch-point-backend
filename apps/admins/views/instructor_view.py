@@ -1,9 +1,10 @@
 import logging
 
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.accounts.permissions import IsAdmin
 from apps.admins.serializers.instructor_serializer import (
     InstructorDetailSerializer,
     InstructorListSerializer,
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class AdminInstructorListView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request):
         logger.info(
@@ -42,7 +43,7 @@ class AdminInstructorListView(APIView):
 
 
 class AdminInstructorDetailView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request, instructor_id):
         logger.info(

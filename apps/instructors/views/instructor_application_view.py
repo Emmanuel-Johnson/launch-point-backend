@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.models import User
+from apps.accounts.permissions import IsStudentOrInstructor
 from apps.instructors.serializers.instructor_application_serializer import (
     InstructorApplicationCreateSerializer,
     InstructorApplicationDetailSerializer,
@@ -19,7 +20,7 @@ from apps.instructors.services.instructor_application_service import (
 class InstructorApplicationFormView(APIView):
     """API view for instructor application form data."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStudentOrInstructor]
     parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
@@ -65,7 +66,7 @@ class InstructorApplicationFormView(APIView):
 class InstructorApplicationListView(APIView):
     """API view for the current user's instructor applications."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStudentOrInstructor]
 
     def get(self, request):
         applications = InstructorApplicationService.get_user_applications(
@@ -83,7 +84,7 @@ class InstructorApplicationListView(APIView):
 class InstructorApplicationDetailView(APIView):
     """API view for a single instructor application."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStudentOrInstructor]
 
     def get(self, request, application_id):
         application = InstructorApplicationService.get_user_application_detail(
@@ -100,7 +101,7 @@ class InstructorApplicationDetailView(APIView):
 
 
 class InstructorDashboardOpenedView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStudentOrInstructor]
 
     def post(self, request):
         InstructorApplicationService.mark_dashboard_as_opened(
