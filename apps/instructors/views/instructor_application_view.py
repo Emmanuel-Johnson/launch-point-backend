@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 
 from apps.accounts.models import User
 from apps.accounts.permissions import IsStudentOrInstructor
+from apps.instructors.models import InstructorProfile
 from apps.instructors.serializers.instructor_application_serializer import (
     InstructorApplicationCreateSerializer,
     InstructorApplicationDetailSerializer,
@@ -104,8 +105,21 @@ class InstructorDashboardOpenedView(APIView):
     permission_classes = [IsAuthenticated, IsStudentOrInstructor]
 
     def post(self, request):
+        # Mark the instructor dashboard as opened.
         InstructorApplicationService.mark_dashboard_as_opened(
             user=request.user,
+        )
+
+        # Get the instructor profile.
+        instructor_profile = InstructorProfile.objects.get(
+            user=request.user,
+        )
+
+        # Get the profile image URL.
+        profile_image = (
+            request.build_absolute_uri(instructor_profile.profile_image.url)
+            if instructor_profile.profile_image
+            else None
         )
 
         return Response(
@@ -114,7 +128,16 @@ class InstructorDashboardOpenedView(APIView):
                     "Welcome to your Instructor Dashboard! "
                     "Start sharing your knowledge and inspiring learners."
                 ),
-                "role": User.Role.INSTRUCTOR,
+                "user": {
+                    # From the User model
+                    "id": request.user.id,
+                    "email": request.user.email,
+                    # From the InstructorProfile model
+                    "full_name": instructor_profile.full_name,
+                    "profile_image": profile_image,
+                    # Instructor dashboard role
+                    "role": User.Role.INSTRUCTOR,
+                },
             },
             status=status.HTTP_200_OK,
         )
