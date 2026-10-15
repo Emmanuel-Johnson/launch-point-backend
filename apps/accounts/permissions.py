@@ -12,8 +12,8 @@ class HasRole(BasePermission):
         )
 
 
-class IsStudentOrInstructor(HasRole):
-    allowed_roles = ("student", "instructor")
+class IsStudent(HasRole):
+    allowed_roles = "student"
 
 
 class IsInstructor(HasRole):

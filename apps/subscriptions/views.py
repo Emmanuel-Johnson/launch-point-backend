@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.permissions import IsAdmin, IsStudentOrInstructor
+from apps.accounts.permissions import IsAdmin, IsStudent
 from apps.subscriptions.serializers import (
     StudentSubscriptionPlanSerializer,
     SubscriptionPlanListSerializer,
@@ -161,7 +161,7 @@ class AdminSubscriptionPlanStatusView(APIView):
 
 
 class StudentSubscriptionPlanListView(APIView):
-    permission_classes = [IsAuthenticated, IsStudentOrInstructor]
+    permission_classes = [IsAuthenticated, IsStudent]
 
     def get(self, request):
         logger.info(

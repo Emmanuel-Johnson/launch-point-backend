@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.accounts.permissions import IsAdmin, IsStudentOrInstructor
+from apps.accounts.permissions import IsAdmin, IsStudent
 
 from .mixins import ThrottleMessageMixin
 from .serializers import (
@@ -280,7 +280,7 @@ class LogoutView(APIView):
     HTTP 401 if it is invalid or already expired.
     """
 
-    permission_classes = [IsAuthenticated, IsStudentOrInstructor]
+    permission_classes = [IsAuthenticated, IsStudent]
 
     def post(self, request):
         logger.info("Logout request received user_id=%s", request.user.id)

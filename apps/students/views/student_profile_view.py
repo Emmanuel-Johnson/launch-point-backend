@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.permissions import IsStudentOrInstructor
+from apps.accounts.permissions import IsStudent
 from apps.students.serializers.student_profile_serializer import (
     StudentProfileSerializer,
 )
@@ -23,7 +23,7 @@ class StudentProfileView(APIView):
     student's profile.
     """
 
-    permission_classes = [IsAuthenticated, IsStudentOrInstructor]
+    permission_classes = [IsAuthenticated, IsStudent]
 
     parser_classes = [
         MultiPartParser,
