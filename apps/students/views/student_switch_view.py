@@ -4,12 +4,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.models import User
-from apps.accounts.permissions import IsStudent
+from apps.accounts.permissions import IsInstructor
 from apps.instructors.models import InstructorProfile
 
 
 class SwitchToInstructorView(APIView):
-    permission_classes = [IsAuthenticated, IsStudent]
+    permission_classes = [IsAuthenticated, IsInstructor]
 
     def post(self, request):
         user = request.user

@@ -13,11 +13,15 @@ class HasRole(BasePermission):
 
 
 class IsStudent(HasRole):
-    allowed_roles = "student"
+    allowed_roles = ("student",)
 
 
 class IsInstructor(HasRole):
-    allowed_roles = "instructor"
+    allowed_roles = ("instructor",)
+
+
+class IsStudentOrInstructor(HasRole):
+    allowed_roles = ("student", "instructor")
 
 
 class IsAdmin(HasRole):
