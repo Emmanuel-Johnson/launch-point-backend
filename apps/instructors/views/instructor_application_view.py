@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.models import User
+from apps.accounts.permissions import IsInstructor, IsStudentOrInstructor
+from apps.instructors.models import InstructorProfile
 from apps.instructors.serializers.instructor_application_serializer import (
     InstructorApplicationCreateSerializer,
     InstructorApplicationDetailSerializer,
@@ -19,7 +21,7 @@ from apps.instructors.services.instructor_application_service import (
 class InstructorApplicationFormView(APIView):
     """API view for instructor application form data."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStudentOrInstructor]
     parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
@@ -65,7 +67,7 @@ class InstructorApplicationFormView(APIView):
 class InstructorApplicationListView(APIView):
     """API view for the current user's instructor applications."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStudentOrInstructor]
 
     def get(self, request):
         applications = InstructorApplicationService.get_user_applications(
@@ -83,7 +85,7 @@ class InstructorApplicationListView(APIView):
 class InstructorApplicationDetailView(APIView):
     """API view for a single instructor application."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStudentOrInstructor]
 
     def get(self, request, application_id):
         application = InstructorApplicationService.get_user_application_detail(
@@ -100,11 +102,24 @@ class InstructorApplicationDetailView(APIView):
 
 
 class InstructorDashboardOpenedView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsInstructor]
 
     def post(self, request):
+        # Mark the instructor dashboard as opened.
         InstructorApplicationService.mark_dashboard_as_opened(
             user=request.user,
+        )
+
+        # Get the instructor profile.
+        instructor_profile = InstructorProfile.objects.get(
+            user=request.user,
+        )
+
+        # Get the profile image URL.
+        profile_image = (
+            request.build_absolute_uri(instructor_profile.profile_image.url)
+            if instructor_profile.profile_image
+            else None
         )
 
         return Response(
@@ -113,7 +128,16 @@ class InstructorDashboardOpenedView(APIView):
                     "Welcome to your Instructor Dashboard! "
                     "Start sharing your knowledge and inspiring learners."
                 ),
-                "role": User.Role.INSTRUCTOR,
+                "user": {
+                    # From the User model
+                    "id": request.user.id,
+                    "email": request.user.email,
+                    # From the InstructorProfile model
+                    "full_name": instructor_profile.full_name,
+                    "profile_image": profile_image,
+                    # Instructor dashboard role
+                    "role": User.Role.INSTRUCTOR,
+                },
             },
             status=status.HTTP_200_OK,
         )

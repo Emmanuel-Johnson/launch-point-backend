@@ -1,8 +1,9 @@
 from rest_framework.exceptions import NotFound
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.accounts.permissions import IsAdmin
 from apps.admins.serializers.instructor_application_serializer import (
     AdminInstructorApplicationApproveSerializer,
     AdminInstructorApplicationDetailSerializer,
@@ -15,7 +16,7 @@ from apps.admins.services.instructor_application_service import (
 
 
 class AdminInstructorApplicationListView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request):
         applications = InstructorApplicationService.get_all_applications()
@@ -30,7 +31,7 @@ class AdminInstructorApplicationListView(APIView):
 
 
 class AdminInstructorApplicationDetailView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request, application_id):
         application = InstructorApplicationService.get_application_by_id(application_id)
@@ -47,7 +48,7 @@ class AdminInstructorApplicationDetailView(APIView):
 
 
 class AdminInstructorApplicationRejectView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def post(self, request, application_id):
         request_serializer = AdminInstructorApplicationRejectSerializer(
@@ -72,7 +73,7 @@ class AdminInstructorApplicationRejectView(APIView):
 
 
 class AdminInstructorApplicationApproveView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def post(self, request, application_id):
         request_serializer = AdminInstructorApplicationApproveSerializer(

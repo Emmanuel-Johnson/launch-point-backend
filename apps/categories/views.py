@@ -1,10 +1,11 @@
 import logging
 
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.accounts.permissions import IsAdmin
 from apps.categories.serializers import CategorySerializer
 from apps.categories.services import CategoryService
 
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class AdminCategoryListView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request):
         logger.info(
@@ -57,7 +58,7 @@ class AdminCategoryListView(APIView):
 
 
 class AdminCategoryDetailView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request, category_id):
         logger.info(
@@ -88,7 +89,7 @@ class AdminCategoryDetailView(APIView):
 
 
 class AdminCategoryStatusView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def patch(self, request, category_id):
         logger.info(
@@ -149,7 +150,7 @@ class AdminCategoryStatusView(APIView):
 
 
 class AdminCategoryUpdateView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def patch(self, request, category_id):
         logger.info(

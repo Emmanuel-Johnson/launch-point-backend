@@ -9,6 +9,7 @@ from apps.instructors.views.instructor_application_view import (
 from apps.instructors.views.instructor_profile_view import (
     InstructorProfileView,
 )
+from apps.instructors.views.instructor_switch_view import SwitchToStudentView
 
 urlpatterns = [
     path(
@@ -31,4 +32,9 @@ urlpatterns = [
         name="instructor-dashboard-opened",
     ),
     path("profile/", InstructorProfileView.as_view(), name="instructor-profile"),
+    path(
+        "switch-to-student/",
+        SwitchToStudentView.as_view(),
+        name="switch-to-student",
+    ),
 ]

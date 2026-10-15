@@ -1,20 +1,28 @@
 from rest_framework.permissions import BasePermission
 
 
-class IsAdminUser(BasePermission):
-    """
-    Allow access only to authenticated users who are both staff and superuser.
-
-    Request-level permission (has_permission); it performs no object-level
-    checks.
-    """
-
-    message = "Admin access required."
+class HasRole(BasePermission):
+    allowed_roles = ()
 
     def has_permission(self, request, view):
+        user = request.user
+
         return (
-            request.user
-            and request.user.is_authenticated
-            and request.user.is_staff
-            and request.user.is_superuser
+            user.is_authenticated and user.is_active and user.role in self.allowed_roles
         )
+
+
+class IsStudent(HasRole):
+    allowed_roles = ("student",)
+
+
+class IsInstructor(HasRole):
+    allowed_roles = ("instructor",)
+
+
+class IsStudentOrInstructor(HasRole):
+    allowed_roles = ("student", "instructor")
+
+
+class IsAdmin(HasRole):
+    allowed_roles = ("admin",)

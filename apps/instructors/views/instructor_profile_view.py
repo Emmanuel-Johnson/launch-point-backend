@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.accounts.permissions import IsInstructor
 from apps.instructors.serializers.instructor_profile_serializer import (
     InstructorProfileSerializer,
     InstructorProfileUpdateSerializer,
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 class InstructorProfileView(APIView):
     """Retrieve and update the authenticated instructor's profile."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsInstructor]
 
     parser_classes = [
         MultiPartParser,
