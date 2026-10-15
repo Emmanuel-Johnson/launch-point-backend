@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission
 
+from apps.instructors.models import InstructorProfile
+
 
 class HasRole(BasePermission):
     allowed_roles = ()
@@ -18,6 +20,15 @@ class IsStudent(HasRole):
 
 class IsInstructor(HasRole):
     allowed_roles = ("instructor",)
+
+    def has_permission(self, request, view):
+        if not super().has_permission(request, view):
+            return False
+
+        try:
+            return request.user.instructor_profile.is_active
+        except InstructorProfile.DoesNotExist:
+            return False
 
 
 class IsStudentOrInstructor(HasRole):

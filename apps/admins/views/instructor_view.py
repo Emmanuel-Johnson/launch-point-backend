@@ -1,5 +1,6 @@
 import logging
 
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,6 +9,7 @@ from apps.accounts.permissions import IsAdmin
 from apps.admins.serializers.instructor_serializer import (
     InstructorDetailSerializer,
     InstructorListSerializer,
+    InstructorStatusSerializer,
 )
 from apps.admins.services.instructor_service import InstructorService
 
@@ -70,3 +72,31 @@ class AdminInstructorDetailView(APIView):
         )
 
         return Response(serializer.data)
+
+
+class AdminInstructorStatusView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def patch(self, request, instructor_id):
+        serializer = InstructorStatusSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        is_active = serializer.validated_data["is_active"]
+
+        instructor = InstructorService.update_instructor_status(
+            instructor_id=instructor_id,
+            is_active=is_active,
+        )
+
+        return Response(
+            {
+                "message": (
+                    "Instructor activated successfully."
+                    if is_active
+                    else "Instructor deactivated successfully."
+                ),
+                "id": instructor.id,
+                "is_active": instructor.is_active,
+            },
+            status=status.HTTP_200_OK,
+        )

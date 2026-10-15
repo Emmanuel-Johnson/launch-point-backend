@@ -9,6 +9,7 @@ from apps.admins.views.instructor_application_view import (
 from apps.admins.views.instructor_view import (
     AdminInstructorDetailView,
     AdminInstructorListView,
+    AdminInstructorStatusView,
 )
 from apps.admins.views.student_view import (
     AdminStudentDetailView,
@@ -61,5 +62,10 @@ urlpatterns = [
         "instructors/<int:instructor_id>/",
         AdminInstructorDetailView.as_view(),
         name="admin-instructor-detail",
+    ),
+    path(
+        "instructors/<int:instructor_id>/status/",
+        AdminInstructorStatusView.as_view(),
+        name="admin-instructor",
     ),
 ]

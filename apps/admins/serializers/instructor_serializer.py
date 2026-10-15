@@ -29,6 +29,7 @@ class InstructorListSerializer(serializers.ModelSerializer):
             "id",
             "full_name",
             "email",
+            "is_active",
             "profile_image",
             "occupation",
             "location",
@@ -64,6 +65,7 @@ class InstructorDetailSerializer(serializers.ModelSerializer):
             "id",
             "full_name",
             "email",
+            "is_active",
             "profile_image",
             "occupation",
             "professional_bio",
@@ -78,3 +80,7 @@ class InstructorDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class InstructorStatusSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField(required=True)
