@@ -105,13 +105,12 @@ REST_FRAMEWORK = {
     },
 }
 
-# Short-lived access tokens with rotating refresh tokens; the previous refresh
-# token is blacklisted on each rotation (requires the token_blacklist app).
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": False,
 }
 

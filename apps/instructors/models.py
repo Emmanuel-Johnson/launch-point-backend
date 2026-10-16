@@ -131,6 +131,8 @@ class InstructorProfile(models.Model):
         related_name="instructor_profile",
     )
 
+    is_active = models.BooleanField(default=True)
+
     # Instructor identity
     full_name = models.CharField(
         max_length=150,
