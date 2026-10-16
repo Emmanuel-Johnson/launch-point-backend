@@ -4,15 +4,27 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.models import User
-from apps.accounts.permissions import IsInstructor
+from apps.accounts.permissions import IsStudentOrInstructor
 from apps.instructors.models import InstructorProfile
 
 
 class SwitchToInstructorView(APIView):
-    permission_classes = [IsAuthenticated, IsInstructor]
+    permission_classes = [IsAuthenticated, IsStudentOrInstructor]
 
     def post(self, request):
         user = request.user
+
+        # Check whether the user's role is student.
+        if user.role == User.Role.STUDENT:
+            return Response(
+                {
+                    "message": (
+                        "Your instructor account has been deactivated. "
+                        "Please contact Launch Point Support for assistance."
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         # Verify the user has an approved instructor application.
         has_approved_application = user.instructor_applications.filter(
