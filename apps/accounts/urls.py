@@ -1,6 +1,8 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
+from apps.accounts.settings_views import ChangePasswordView
+
 from .views import (
     AdminLoginView,
     AdminLogoutView,
@@ -81,5 +83,10 @@ urlpatterns = [
         "admin/logout/",
         AdminLogoutView.as_view(),
         name="admin-logout",
+    ),
+    path(
+        "change-password/",
+        ChangePasswordView.as_view(),
+        name="change-password",
     ),
 ]
