@@ -13,6 +13,8 @@ from google.auth.transport import requests
 from google.oauth2 import id_token
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from apps.accounts.models import User
+
 from .exceptions import (
     EmailAlreadyExistsException,
     EmailAlreadyVerifiedException,
@@ -324,17 +326,37 @@ def login_user(validated_data):
 
     logger.info("Login successful user_id=%s", user.id)
 
-    return {
-        "message": "Login successful.",
-        "user": {
-            "id": user.id,
-            "full_name": user.full_name,
-            "email": user.email,
-            "role": user.role,
-            "profile_image": (user.profile_image.url if user.profile_image else None),
-        },
-        "tokens": tokens,
-    }
+    if user.role == User.Role.INSTRUCTOR:
+        return {
+            "message": "Welcome back! Ready to inspire learners and"
+            " share your knowledge.",
+            "user": {
+                "id": user.id,
+                "full_name": user.instructor_profile.full_name,
+                "email": user.email,
+                "role": user.role,
+                "profile_image": (
+                    f"http://localhost:8000/media/{user.instructor_profile.profile_image.name}"
+                    if user.instructor_profile.profile_image
+                    else None
+                ),
+            },
+            "tokens": tokens,
+        }
+    else:
+        return {
+            "message": "Login successful.",
+            "user": {
+                "id": user.id,
+                "full_name": user.full_name,
+                "email": user.email,
+                "role": user.role,
+                "profile_image": (
+                    user.profile_image.url if user.profile_image else None
+                ),
+            },
+            "tokens": tokens,
+        }
 
 
 def forgot_password(email):
@@ -699,18 +721,38 @@ def google_authenticate(id_token_string):
         user.id,
     )
 
-    return {
-        "message": "Welcome to Launch Point! Your account is ready. "
-        "Let’s turn your goals into progress.",
-        "user": {
-            "id": user.id,
-            "full_name": user.full_name,
-            "email": user.email,
-            "role": user.role,
-            "profile_image": (user.profile_image.url if user.profile_image else None),
-        },
-        "tokens": tokens,
-    }
+    if user.role == User.Role.INSTRUCTOR:
+        return {
+            "message": "Welcome back! Ready to inspire learners and"
+            " share your knowledge.",
+            "user": {
+                "id": user.id,
+                "full_name": user.instructor_profile.full_name,
+                "email": user.email,
+                "role": user.role,
+                "profile_image": (
+                    f"http://localhost:8000/media/{user.instructor_profile.profile_image.name}"
+                    if user.instructor_profile.profile_image
+                    else None
+                ),
+            },
+            "tokens": tokens,
+        }
+    else:
+        return {
+            "message": "Welcome to Launch Point! Your account is ready. "
+            "Let’s turn your goals into progress.",
+            "user": {
+                "id": user.id,
+                "full_name": user.full_name,
+                "email": user.email,
+                "role": user.role,
+                "profile_image": (
+                    user.profile_image.url if user.profile_image else None
+                ),
+            },
+            "tokens": tokens,
+        }
 
 
 def admin_login_user(validated_data):
