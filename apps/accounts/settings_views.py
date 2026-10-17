@@ -25,6 +25,9 @@ class ChangePasswordView(APIView):
         )
 
         return Response(
-            {"message": "Password changed successfully."},
+            {
+                "message": "Password updated successfully. "
+                "Please sign in with your new password."
+            },
             status=status.HTTP_200_OK,
         )
