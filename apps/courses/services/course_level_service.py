@@ -37,5 +37,11 @@ class CourseLevelService:
         )
 
     @staticmethod
-    def update_level_status_by_id():
-        pass
+    def update_level_status_by_id(
+        level: CourseLevel,
+        is_active: bool,
+    ) -> CourseLevel:
+        return CourseLevelRepository.update_level_status_by_id(
+            level=level,
+            is_active=is_active,
+        )

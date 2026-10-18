@@ -8,6 +8,7 @@ from apps.accounts.permissions import IsAdmin
 from apps.courses.models import CourseLevel
 from apps.courses.serializers.course_level_serializer import (
     CourseLevelSerializer,
+    CourseLevelStatusSerializer,
 )
 from apps.courses.services.course_level_service import (
     CourseLevelService,
@@ -86,5 +87,30 @@ class CourseLevelUpdateView(APIView):
 class CourseLevelToggleStatusView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    def patch(self, request):
-        pass
+    def patch(
+        self,
+        request: Request,
+        level_id: int,
+    ) -> Response:
+        level = CourseLevelService.get_level_by_id(
+            level_id=level_id,
+        )
+
+        serializer = CourseLevelStatusSerializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        level = CourseLevelService.update_level_status_by_id(
+            level=level,
+            is_active=serializer.validated_data["is_active"],
+        )
+
+        return Response(
+            {
+                "success": True,
+                "message": "Course level status updated successfully.",
+                "data": CourseLevelSerializer(level).data,
+            },
+            status=status.HTTP_200_OK,
+        )

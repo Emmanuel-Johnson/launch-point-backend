@@ -38,3 +38,7 @@ class CourseLevelSerializer(serializers.ModelSerializer):
             )
 
         return name
+
+
+class CourseLevelStatusSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField()

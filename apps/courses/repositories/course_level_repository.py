@@ -31,5 +31,12 @@ class CourseLevelRepository:
         return level
 
     @staticmethod
-    def update_level_status_by_id():
-        pass
+    def update_level_status_by_id(
+        level: CourseLevel,
+        is_active: bool,
+    ) -> CourseLevel:
+        level.is_active = is_active
+
+        level.save(update_fields=["is_active", "updated_at"])
+
+        return level
