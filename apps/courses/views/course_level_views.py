@@ -52,14 +52,25 @@ class CourseLevelListCreateView(APIView):
 class CourseLevelUpdateView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    def put(self, request: Request, level_id: int) -> Response:
-        serializer = CourseLevelSerializer(data=request.data)
+    def patch(
+        self,
+        request: Request,
+        level_id: int,
+    ) -> Response:
+        level = CourseLevelService.get_level_by_id(
+            level_id=level_id,
+        )
+
+        serializer = CourseLevelSerializer(
+            level,
+            data=request.data,
+            partial=True,
+        )
         serializer.is_valid(raise_exception=True)
 
-        level: CourseLevel = CourseLevelService.update_level_by_id(
-            level_id=level_id,
-            name=serializer.validated_data["name"],
-            description=serializer.validated_data.get("description", ""),
+        level = CourseLevelService.update_level_by_id(
+            level=level,
+            **serializer.validated_data,
         )
 
         return Response(
@@ -75,16 +86,5 @@ class CourseLevelUpdateView(APIView):
 class CourseLevelToggleStatusView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    def patch(self, request: Request, level_id: int) -> Response:
-        level: CourseLevel = CourseLevelService.toggle_level_status_by_id(
-            level_id=level_id,
-        )
-
-        return Response(
-            {
-                "success": True,
-                "message": "Course level status updated successfully.",
-                "data": CourseLevelSerializer(level).data,
-            },
-            status=status.HTTP_200_OK,
-        )
+    def patch(self, request):
+        pass

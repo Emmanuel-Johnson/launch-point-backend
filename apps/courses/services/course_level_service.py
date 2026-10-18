@@ -1,4 +1,5 @@
 from django.db.models import QuerySet
+from django.shortcuts import get_object_or_404
 
 from apps.courses.models import CourseLevel
 from apps.courses.repositories.course_level_repository import (
@@ -22,21 +23,19 @@ class CourseLevelService:
         return CourseLevelRepository.get_all_levels()
 
     @staticmethod
+    def get_level_by_id(level_id: int) -> CourseLevel:
+        return get_object_or_404(CourseLevel, id=level_id)
+
+    @staticmethod
     def update_level_by_id(
-        level_id: int,
-        name: str,
-        description: str = "",
+        level: CourseLevel,
+        **validated_data,
     ) -> CourseLevel:
         return CourseLevelRepository.update_level_by_id(
-            level_id=level_id,
-            name=name,
-            description=description,
+            level=level,
+            **validated_data,
         )
 
     @staticmethod
-    def toggle_level_status_by_id(
-        level_id: int,
-    ) -> CourseLevel:
-        return CourseLevelRepository.toggle_level_status_by_id(
-            level_id=level_id,
-        )
+    def update_level_status_by_id():
+        pass

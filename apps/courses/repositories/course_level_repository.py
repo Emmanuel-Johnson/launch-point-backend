@@ -20,23 +20,16 @@ class CourseLevelRepository:
 
     @staticmethod
     def update_level_by_id(
-        level_id: int,
-        name: str,
-        description: str = "",
+        level: CourseLevel,
+        **validated_data,
     ) -> CourseLevel:
-        level = CourseLevel.objects.get(id=level_id)
+        for field, value in validated_data.items():
+            setattr(level, field, value)
 
-        level.name = name
-        level.description = description
-        level.save(update_fields=["name", "description", "updated_at"])
+        level.save()
 
         return level
 
     @staticmethod
-    def toggle_level_status_by_id(level_id: int) -> CourseLevel:
-        level = CourseLevel.objects.get(id=level_id)
-
-        level.is_active = not level.is_active
-        level.save(update_fields=["is_active", "updated_at"])
-
-        return level
+    def update_level_status_by_id():
+        pass
