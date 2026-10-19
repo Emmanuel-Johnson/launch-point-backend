@@ -5,6 +5,11 @@ from apps.courses.views.course_level_views import (
     CourseLevelToggleStatusView,
     CourseLevelUpdateView,
 )
+from apps.courses.views.course_skill_views import (
+    CourseSkillListCreateView,
+    CourseSkillToggleStatusView,
+    CourseSkillUpdateView,
+)
 
 urlpatterns = [
     path(
@@ -21,5 +26,20 @@ urlpatterns = [
         "levels/<int:level_id>/status/",
         CourseLevelToggleStatusView.as_view(),
         name="course-level-status",
+    ),
+    path(
+        "skills/",
+        CourseSkillListCreateView.as_view(),
+        name="course-skill-list-create",
+    ),
+    path(
+        "skills/<int:skill_id>/",
+        CourseSkillUpdateView.as_view(),
+        name="course-skill-update",
+    ),
+    path(
+        "skills/<int:skill_id>/status/",
+        CourseSkillToggleStatusView.as_view(),
+        name="course-skill-status",
     ),
 ]
