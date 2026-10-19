@@ -7,6 +7,10 @@ from apps.courses.models import CourseLevel
 
 class CourseLevelRepository:
     @staticmethod
+    def get_level_by_id(level_id: int) -> CourseLevel:
+        return CourseLevel.objects.get(id=level_id)
+
+    @staticmethod
     def get_all_levels() -> QuerySet[CourseLevel]:
         return CourseLevel.objects.all()
 
