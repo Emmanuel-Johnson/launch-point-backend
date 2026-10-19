@@ -6,11 +6,11 @@ from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsAdmin
 from apps.courses.models import Skill
-from apps.courses.serializers.course_skill_serializer import (
+from apps.courses.serializers.skill_serializer import (
     CourseSkillSerializer,
     CourseSkillStatusSerializer,
 )
-from apps.courses.services.course_skill_service import (
+from apps.courses.services.skill_service import (
     CourseSkillService,
 )
 

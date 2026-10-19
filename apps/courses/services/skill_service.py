@@ -2,7 +2,7 @@ from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 
 from apps.courses.models import Skill
-from apps.courses.repositories.course_skill_repository import (
+from apps.courses.repositories.skill_repository import (
     CourseSkillRepository,
 )
 

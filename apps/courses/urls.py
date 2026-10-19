@@ -5,7 +5,7 @@ from apps.courses.views.course_level_views import (
     CourseLevelToggleStatusView,
     CourseLevelUpdateView,
 )
-from apps.courses.views.course_skill_views import (
+from apps.courses.views.skill_views import (
     CourseSkillListCreateView,
     CourseSkillToggleStatusView,
     CourseSkillUpdateView,
