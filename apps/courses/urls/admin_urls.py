@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.courses.views.course_level_views import (
+from apps.courses.views.admin.course_level_views import (
     CourseLevelListCreateView,
     CourseLevelStatusView,
     CourseLevelUpdateView,
