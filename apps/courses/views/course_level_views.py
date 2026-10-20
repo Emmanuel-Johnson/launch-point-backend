@@ -3,10 +3,13 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.exceptions import NotFound
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.accounts.permissions import IsAdmin
+from apps.core.responses import success_response
 from apps.courses.models import CourseLevel
 from apps.courses.serializers.course_level_serializer import (
     CourseLevelCreateSerializer,
@@ -14,29 +17,25 @@ from apps.courses.serializers.course_level_serializer import (
     CourseLevelStatusSerializer,
     CourseLevelUpdateSerializer,
 )
-from apps.courses.services.course_level_service import (
-    CourseLevelService,
-)
+from apps.courses.services.course_level_service import CourseLevelService
 
 logger = logging.getLogger(__name__)
 
 
 class CourseLevelListCreateView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
     def get(self, request: Request) -> Response:
         logger.info("Fetching all course levels.")
 
         levels = CourseLevelService.get_all_levels()
-
-        serializer = CourseLevelReadSerializer(
-            levels,
-            many=True,
-        )
+        serializer = CourseLevelReadSerializer(levels, many=True)
 
         logger.info("Successfully fetched course levels.")
 
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK,
+        return success_response(
+            message="Course levels fetched successfully.",
+            data=serializer.data,
         )
 
     def post(self, request: Request) -> Response:
@@ -56,13 +55,16 @@ class CourseLevelListCreateView(APIView):
             level.pk,
         )
 
-        return Response(
-            response_serializer.data,
-            status=status.HTTP_201_CREATED,
+        return success_response(
+            message="Course level created successfully.",
+            data=response_serializer.data,
+            status_code=status.HTTP_201_CREATED,
         )
 
 
 class CourseLevelUpdateView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
     def get_level(self, level_id: int) -> CourseLevel:
         try:
             return CourseLevelService.get_level_by_id(level_id)
@@ -97,13 +99,15 @@ class CourseLevelUpdateView(APIView):
             updated_level.pk,
         )
 
-        return Response(
-            response_serializer.data,
-            status=status.HTTP_200_OK,
+        return success_response(
+            message="Course level updated successfully.",
+            data=response_serializer.data,
         )
 
 
 class CourseLevelStatusView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
     def get_level(self, level_id: int) -> CourseLevel:
         try:
             return CourseLevelService.get_level_by_id(level_id)
@@ -134,7 +138,7 @@ class CourseLevelStatusView(APIView):
             updated_level.pk,
         )
 
-        return Response(
-            response_serializer.data,
-            status=status.HTTP_200_OK,
+        return success_response(
+            message="Course level status updated successfully.",
+            data=response_serializer.data,
         )
