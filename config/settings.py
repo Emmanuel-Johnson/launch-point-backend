@@ -105,6 +105,7 @@ REST_FRAMEWORK = {
         "google_auth": "10/min",
         "admin_login": "3/min",
     },
+    "EXCEPTION_HANDLER": "apps.core.exception_handler.custom_exception_handler",
 }
 
 
