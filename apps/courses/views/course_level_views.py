@@ -1,9 +1,13 @@
+import logging
+
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.exceptions import NotFound
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.courses.models import CourseLevel
 from apps.courses.serializers.course_level_serializer import (
     CourseLevelCreateSerializer,
     CourseLevelReadSerializer,
@@ -14,9 +18,13 @@ from apps.courses.services.course_level_service import (
     CourseLevelService,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class CourseLevelListCreateView(APIView):
-    def get(self, request):
+    def get(self, request: Request) -> Response:
+        logger.info("Fetching all course levels.")
+
         levels = CourseLevelService.get_all_levels()
 
         serializer = CourseLevelReadSerializer(
@@ -24,18 +32,29 @@ class CourseLevelListCreateView(APIView):
             many=True,
         )
 
+        logger.info("Successfully fetched course levels.")
+
         return Response(
             serializer.data,
             status=status.HTTP_200_OK,
         )
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
+        logger.info("Creating a new course level.")
+
         serializer = CourseLevelCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        level = CourseLevelService.create_level(**serializer.validated_data)
+        level = CourseLevelService.create_level(
+            **serializer.validated_data,
+        )
 
         response_serializer = CourseLevelReadSerializer(level)
+
+        logger.info(
+            "Course level created successfully. ID: %s",
+            level.pk,
+        )
 
         return Response(
             response_serializer.data,
@@ -44,11 +63,20 @@ class CourseLevelListCreateView(APIView):
 
 
 class CourseLevelUpdateView(APIView):
-    def patch(self, request, pk):
+    def get_level(self, level_id: int) -> CourseLevel:
         try:
-            level = CourseLevelService.get_level_by_id(pk)
+            return CourseLevelService.get_level_by_id(level_id)
         except ObjectDoesNotExist:
+            logger.warning(
+                "Course level not found. ID: %s",
+                level_id,
+            )
             raise NotFound("Course level not found.")
+
+    def patch(self, request: Request, pk: int) -> Response:
+        logger.info("Updating course level. ID: %s", pk)
+
+        level = self.get_level(pk)
 
         serializer = CourseLevelUpdateSerializer(
             instance=level,
@@ -64,6 +92,11 @@ class CourseLevelUpdateView(APIView):
 
         response_serializer = CourseLevelReadSerializer(updated_level)
 
+        logger.info(
+            "Course level updated successfully. ID: %s",
+            updated_level.pk,
+        )
+
         return Response(
             response_serializer.data,
             status=status.HTTP_200_OK,
@@ -71,11 +104,20 @@ class CourseLevelUpdateView(APIView):
 
 
 class CourseLevelStatusView(APIView):
-    def patch(self, request, pk):
+    def get_level(self, level_id: int) -> CourseLevel:
         try:
-            level = CourseLevelService.get_level_by_id(pk)
+            return CourseLevelService.get_level_by_id(level_id)
         except ObjectDoesNotExist:
+            logger.warning(
+                "Course level not found. ID: %s",
+                level_id,
+            )
             raise NotFound("Course level not found.")
+
+    def patch(self, request: Request, pk: int) -> Response:
+        logger.info("Updating course level status. ID: %s", pk)
+
+        level = self.get_level(pk)
 
         serializer = CourseLevelStatusSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -86,6 +128,11 @@ class CourseLevelStatusView(APIView):
         )
 
         response_serializer = CourseLevelReadSerializer(updated_level)
+
+        logger.info(
+            "Course level status updated successfully. ID: %s",
+            updated_level.pk,
+        )
 
         return Response(
             response_serializer.data,
