@@ -1,14 +1,14 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.request import Request
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.permissions import IsAdmin
-from apps.courses.models import CourseLevel
 from apps.courses.serializers.course_level_serializer import (
-    CourseLevelSerializer,
+    CourseLevelCreateSerializer,
+    CourseLevelReadSerializer,
     CourseLevelStatusSerializer,
+    CourseLevelUpdateSerializer,
 )
 from apps.courses.services.course_level_service import (
     CourseLevelService,
@@ -16,101 +16,78 @@ from apps.courses.services.course_level_service import (
 
 
 class CourseLevelListCreateView(APIView):
-    permission_classes = [IsAuthenticated, IsAdmin]
-
-    def get(self, request: Request) -> Response:
+    def get(self, request):
         levels = CourseLevelService.get_all_levels()
-        serializer = CourseLevelSerializer(levels, many=True)
+
+        serializer = CourseLevelReadSerializer(
+            levels,
+            many=True,
+        )
 
         return Response(
-            {
-                "success": True,
-                "message": "Course levels retrieved successfully.",
-                "data": serializer.data,
-            },
+            serializer.data,
             status=status.HTTP_200_OK,
         )
 
-    def post(self, request: Request) -> Response:
-        serializer = CourseLevelSerializer(data=request.data)
+    def post(self, request):
+        serializer = CourseLevelCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        level: CourseLevel = CourseLevelService.create_level(
-            name=serializer.validated_data["name"],
-            description=serializer.validated_data.get("description", ""),
-        )
+        level = CourseLevelService.create_level(**serializer.validated_data)
+
+        response_serializer = CourseLevelReadSerializer(level)
 
         return Response(
-            {
-                "success": True,
-                "message": "Course level created successfully.",
-                "data": CourseLevelSerializer(level).data,
-            },
+            response_serializer.data,
             status=status.HTTP_201_CREATED,
         )
 
 
 class CourseLevelUpdateView(APIView):
-    permission_classes = [IsAuthenticated, IsAdmin]
+    def patch(self, request, pk):
+        try:
+            level = CourseLevelService.get_level_by_id(pk)
+        except ObjectDoesNotExist:
+            raise NotFound("Course level not found.")
 
-    def patch(
-        self,
-        request: Request,
-        level_id: int,
-    ) -> Response:
-        level = CourseLevelService.get_level_by_id(
-            level_id=level_id,
-        )
-
-        serializer = CourseLevelSerializer(
-            level,
+        serializer = CourseLevelUpdateSerializer(
+            instance=level,
             data=request.data,
             partial=True,
         )
         serializer.is_valid(raise_exception=True)
 
-        level = CourseLevelService.update_level_by_id(
-            level=level,
+        updated_level = CourseLevelService.update_level(
+            level,
             **serializer.validated_data,
         )
 
+        response_serializer = CourseLevelReadSerializer(updated_level)
+
         return Response(
-            {
-                "success": True,
-                "message": "Course level updated successfully.",
-                "data": CourseLevelSerializer(level).data,
-            },
+            response_serializer.data,
             status=status.HTTP_200_OK,
         )
 
 
-class CourseLevelToggleStatusView(APIView):
-    permission_classes = [IsAuthenticated, IsAdmin]
+class CourseLevelStatusView(APIView):
+    def patch(self, request, pk):
+        try:
+            level = CourseLevelService.get_level_by_id(pk)
+        except ObjectDoesNotExist:
+            raise NotFound("Course level not found.")
 
-    def patch(
-        self,
-        request: Request,
-        level_id: int,
-    ) -> Response:
-        level = CourseLevelService.get_level_by_id(
-            level_id=level_id,
-        )
-
-        serializer = CourseLevelStatusSerializer(
-            data=request.data,
-        )
+        serializer = CourseLevelStatusSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        level = CourseLevelService.update_level_status_by_id(
+        updated_level = CourseLevelService.update_level_status(
             level=level,
-            is_active=serializer.validated_data["is_active"],
+            **serializer.validated_data,
         )
 
+        response_serializer = CourseLevelReadSerializer(updated_level)
+
         return Response(
-            {
-                "success": True,
-                "message": "Course level status updated successfully.",
-                "data": CourseLevelSerializer(level).data,
-            },
+            response_serializer.data,
             status=status.HTTP_200_OK,
         )
