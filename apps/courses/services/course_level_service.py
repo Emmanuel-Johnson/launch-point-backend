@@ -48,3 +48,7 @@ class CourseLevelService:
             level=level,
             is_active=is_active,
         )
+
+    @staticmethod
+    def soft_delete_level(level: CourseLevel) -> CourseLevel:
+        return CourseLevelRepository.soft_delete_level(level=level)

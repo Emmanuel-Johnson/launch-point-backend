@@ -12,7 +12,10 @@ class CourseLevelBaseSerializer(serializers.ModelSerializer):
                 "Name must contain at least 3 characters."
             )
 
-        queryset = CourseLevel.objects.filter(name__iexact=value)
+        queryset = CourseLevel.objects.filter(
+            name__iexact=value,
+            is_deleted=False,
+        )
 
         if self.instance:
             queryset = queryset.exclude(pk=self.instance.pk)

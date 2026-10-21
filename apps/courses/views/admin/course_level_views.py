@@ -142,3 +142,31 @@ class CourseLevelStatusView(APIView):
             message="Course level status updated successfully.",
             data=response_serializer.data,
         )
+
+
+class CourseLevelDeleteView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def delete(self, request: Request, pk: int) -> Response:
+        logger.info("Soft-deleting course level. ID: %s", pk)
+
+        try:
+            level = CourseLevelService.get_level_by_id(pk)
+        except ObjectDoesNotExist:
+            logger.warning(
+                "Course level not found for deletion. ID: %s",
+                pk,
+            )
+            raise NotFound("Course level not found.")
+
+        CourseLevelService.soft_delete_level(level)
+
+        logger.info(
+            "Course level soft-deleted successfully. ID: %s",
+            pk,
+        )
+
+        return success_response(
+            message="Course level deleted successfully.",
+            data=None,
+        )

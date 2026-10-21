@@ -16,6 +16,12 @@ class CourseLevel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
     class Meta:
         db_table = "course_levels"
         ordering = ["-created_at"]
@@ -24,6 +30,7 @@ class CourseLevel(models.Model):
         constraints = [
             models.UniqueConstraint(
                 Lower("name"),
+                condition=models.Q(is_deleted=False),
                 name="unique_course_level_name",
             ),
             models.CheckConstraint(
@@ -51,6 +58,12 @@ class Skill(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
     class Meta:
         db_table = "skills"
         ordering = ["-created_at"]
@@ -59,6 +72,7 @@ class Skill(models.Model):
         constraints = [
             models.UniqueConstraint(
                 Lower("name"),
+                condition=models.Q(is_deleted=False),
                 name="unique_skill_name",
             ),
             models.CheckConstraint(
