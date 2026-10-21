@@ -5,14 +5,14 @@ from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/auth/", include("apps.accounts.urls")),
-    path("api/students/", include("apps.students.urls")),
     path("api/admins/", include("apps.admins.urls")),
     path("api/admins/categories/", include("apps.categories.urls")),
     path("api/admins/subscriptions/", include("apps.subscriptions.urls")),
-    path("api/students/subscriptions/", include("apps.subscriptions.student_urls")),
+    path("api/admins/courses/", include("apps.courses.urls.admin_urls")),
     path("api/instructors/", include("apps.instructors.urls")),
-    path("api/admins/courses/", include("apps.courses.urls")),
+    path("api/auth/", include("apps.accounts.urls")),
+    path("api/students/", include("apps.students.urls")),
+    path("api/students/subscriptions/", include("apps.subscriptions.student_urls")),
 ]
 
 if settings.DEBUG:
