@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.accounts.permissions import IsAdmin, IsStudent
+from apps.accounts.permissions import IsAdmin, IsStudentOrInstructor
 
 from .mixins import ThrottleMessageMixin
 from .serializers import (
@@ -73,6 +73,57 @@ def auth_response_with_refresh_cookie(result, status_code=status.HTTP_200_OK):
         )
 
     return response
+
+
+def clear_refresh_token_cookie(response):
+    """Remove the refresh-token cookie from the browser."""
+    response.delete_cookie(
+        key=settings.REFRESH_TOKEN_COOKIE_NAME,
+        path=settings.REFRESH_TOKEN_COOKIE_PATH,
+        samesite=settings.REFRESH_TOKEN_COOKIE_SAMESITE,
+    )
+    return response
+
+
+class CookieTokenRefreshView(APIView):
+    """
+    Generate a new access token using the refresh token
+    stored in the HttpOnly cookie.
+    """
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get(settings.REFRESH_TOKEN_COOKIE_NAME)
+
+        if not refresh_token:
+            return Response(
+                {"detail": "Refresh token cookie is missing."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+
+        except TokenError:
+            response = Response(
+                {"detail": "Invalid or expired refresh token."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+            response.delete_cookie(
+                key=settings.REFRESH_TOKEN_COOKIE_NAME,
+                path=settings.REFRESH_TOKEN_COOKIE_PATH,
+                samesite=settings.REFRESH_TOKEN_COOKIE_SAMESITE,
+            )
+
+            return response
+
+        return Response(
+            {"access": access_token},
+            status=status.HTTP_200_OK,
+        )
 
 
 class SignupView(ThrottleMessageMixin, APIView):
@@ -309,26 +360,27 @@ class LogoutView(APIView):
     HTTP 401 if it is invalid or already expired.
     """
 
-    permission_classes = [IsAuthenticated, IsStudent]
+    permission_classes = [IsAuthenticated, IsStudentOrInstructor]
 
     def post(self, request):
         logger.info("Logout request received user_id=%s", request.user.id)
 
-        refresh_token = request.data.get("refresh")
+        refresh_token = request.COOKIES.get(settings.REFRESH_TOKEN_COOKIE_NAME)
 
         if not refresh_token:
-            logger.warning(
-                "Logout failed: refresh token missing user_id=%s",
+            logger.info(
+                "Logout requested without refresh cookie user_id=%s",
                 request.user.id,
             )
-            return Response(
-                {"detail": "Refresh token is required."},
-                status=status.HTTP_400_BAD_REQUEST,
+
+            response = Response(
+                {"message": "Logout successful."},
+                status=status.HTTP_200_OK,
             )
+            return clear_refresh_token_cookie(response)
 
         try:
             token = RefreshToken(refresh_token)
-
             token.blacklist()
 
         except TokenError:
@@ -336,17 +388,20 @@ class LogoutView(APIView):
                 "Logout failed: invalid or expired refresh token user_id=%s",
                 request.user.id,
             )
-            return Response(
+
+            response = Response(
                 {"detail": "Invalid or expired refresh token."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+            return clear_refresh_token_cookie(response)
 
         logger.info("Logout successful user_id=%s", request.user.id)
 
-        return Response(
+        response = Response(
             {"message": "Logout successful."},
             status=status.HTTP_200_OK,
         )
+        return clear_refresh_token_cookie(response)
 
 
 class AdminLoginView(ThrottleMessageMixin, APIView):
@@ -388,19 +443,24 @@ class AdminLogoutView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     def post(self, request):
-        logger.info("Admin logout request received user_id=%s", request.user.id)
+        logger.info(
+            "Admin logout request received user_id=%s",
+            request.user.id,
+        )
 
-        refresh_token = request.data.get("admin_refresh")
+        refresh_token = request.COOKIES.get(settings.REFRESH_TOKEN_COOKIE_NAME)
 
         if not refresh_token:
-            logger.warning(
-                "Admin logout failed: refresh token missing user_id=%s",
+            logger.info(
+                "Admin logout requested without refresh cookie user_id=%s",
                 request.user.id,
             )
-            return Response(
-                {"detail": "Refresh token is required."},
-                status=status.HTTP_400_BAD_REQUEST,
+
+            response = Response(
+                {"message": "Admin logout successful."},
+                status=status.HTTP_200_OK,
             )
+            return clear_refresh_token_cookie(response)
 
         try:
             token = RefreshToken(refresh_token)
@@ -411,14 +471,20 @@ class AdminLogoutView(APIView):
                 "Admin logout failed: invalid or expired refresh token user_id=%s",
                 request.user.id,
             )
-            return Response(
+
+            response = Response(
                 {"detail": "Invalid or expired refresh token."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+            return clear_refresh_token_cookie(response)
 
-        logger.info("Admin logout successful user_id=%s", request.user.id)
+        logger.info(
+            "Admin logout successful user_id=%s",
+            request.user.id,
+        )
 
-        return Response(
+        response = Response(
             {"message": "Admin logout successful."},
             status=status.HTTP_200_OK,
         )
+        return clear_refresh_token_cookie(response)
