@@ -124,6 +124,21 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
 
+# Allow the React frontend to send and receive cookies.
+CORS_ALLOW_CREDENTIALS = True
+
+# Allow the frontend origin for Django CSRF-protected requests.
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+]
+
+# Refresh-token cookie configuration
+REFRESH_TOKEN_COOKIE_NAME = "refresh_token"
+REFRESH_TOKEN_COOKIE_HTTPONLY = True
+REFRESH_TOKEN_COOKIE_SECURE = not DEBUG
+REFRESH_TOKEN_COOKIE_SAMESITE = "Lax"
+REFRESH_TOKEN_COOKIE_PATH = "/api/auth/"
+REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 60 * 60  # 7 days
 
 AUTH_PASSWORD_VALIDATORS = [
     {
