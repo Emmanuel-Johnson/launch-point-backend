@@ -124,6 +124,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
 
+# refresh token config removed
 
 AUTH_PASSWORD_VALIDATORS = [
     {
