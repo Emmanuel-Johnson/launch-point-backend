@@ -13,7 +13,6 @@ from apps.accounts.permissions import IsAdmin, IsStudent
 
 from .auth_responses import (
     auth_response,
-    clear_refresh_token_cookie,
     logout_response,
 )
 from .mixins import ThrottleMessageMixin
@@ -55,13 +54,14 @@ logger = logging.getLogger(__name__)
 
 class CookieTokenRefreshView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         refresh_token = request.COOKIES.get(settings.REFRESH_TOKEN_COOKIE_NAME)
 
         if not refresh_token:
             return Response(
-                {"detail": "Refresh token is missing."},
+                {"detail": "Refresh token cookie is missing."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
@@ -69,14 +69,11 @@ class CookieTokenRefreshView(APIView):
 
         try:
             serializer.is_valid(raise_exception=True)
-
-        except (InvalidToken, TokenError):
-            response = Response(
+        except (TokenError, InvalidToken):
+            return Response(
                 {"detail": "Refresh token is invalid or expired."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-            clear_refresh_token_cookie(response)
-            return response
 
         return Response(
             {"access": serializer.validated_data["access"]},
