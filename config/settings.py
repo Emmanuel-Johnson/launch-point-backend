@@ -119,10 +119,22 @@ SIMPLE_JWT = {
 
 GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID")
 
-# Allow the local Vite/React dev server (its default port) to call the API.
+
+# Frontend origin
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+# Allow cookies in cross-origin requests
+CORS_ALLOW_CREDENTIALS = True
+
+# Cookie settings for refresh token
+REFRESH_TOKEN_COOKIE_NAME = "refresh_token"
+REFRESH_TOKEN_COOKIE_HTTPONLY = True
+REFRESH_TOKEN_COOKIE_SECURE = not DEBUG
+REFRESH_TOKEN_COOKIE_SAMESITE = "Lax"
+REFRESH_TOKEN_COOKIE_PATH = "/api/auth/"
+REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 60 * 60  # 7 days
 
 
 AUTH_PASSWORD_VALIDATORS = [

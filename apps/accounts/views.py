@@ -1,14 +1,21 @@
 import logging
 
+from django.conf import settings
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.permissions import IsAdmin, IsStudent
 
+from .auth_responses import (
+    auth_response,
+    clear_refresh_token_cookie,
+    logout_response,
+)
 from .mixins import ThrottleMessageMixin
 from .serializers import (
     AdminLoginSerializer,
@@ -44,6 +51,37 @@ from .throttles import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+class CookieTokenRefreshView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get(settings.REFRESH_TOKEN_COOKIE_NAME)
+
+        if not refresh_token:
+            return Response(
+                {"detail": "Refresh token is missing."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        serializer = TokenRefreshSerializer(data={"refresh": refresh_token})
+
+        try:
+            serializer.is_valid(raise_exception=True)
+
+        except (InvalidToken, TokenError):
+            response = Response(
+                {"detail": "Refresh token is invalid or expired."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+            clear_refresh_token_cookie(response)
+            return response
+
+        return Response(
+            {"access": serializer.validated_data["access"]},
+            status=status.HTTP_200_OK,
+        )
 
 
 class SignupView(ThrottleMessageMixin, APIView):
@@ -95,9 +133,9 @@ class VerifyEmailOTPView(ThrottleMessageMixin, APIView):
             otp=serializer.validated_data["otp"],
         )
 
-        return Response(
+        return auth_response(
             result,
-            status=status.HTTP_200_OK,
+            status_code=status.HTTP_200_OK,
         )
 
 
@@ -140,9 +178,9 @@ class LoginView(ThrottleMessageMixin, APIView):
 
         result = login_user(serializer.validated_data)
 
-        return Response(
+        return auth_response(
             result,
-            status=status.HTTP_200_OK,
+            status_code=status.HTTP_200_OK,
         )
 
 
@@ -265,9 +303,9 @@ class GoogleAuthenticationView(ThrottleMessageMixin, APIView):
 
         result = google_authenticate(serializer.validated_data["id_token"])
 
-        return Response(
+        return auth_response(
             result,
-            status=status.HTTP_200_OK,
+            status_code=status.HTTP_200_OK,
         )
 
 
@@ -314,10 +352,7 @@ class LogoutView(APIView):
 
         logger.info("Logout successful user_id=%s", request.user.id)
 
-        return Response(
-            {"message": "Logout successful."},
-            status=status.HTTP_200_OK,
-        )
+        return logout_response(request)
 
 
 class AdminLoginView(ThrottleMessageMixin, APIView):
@@ -341,9 +376,9 @@ class AdminLoginView(ThrottleMessageMixin, APIView):
 
         result = admin_login_user(serializer.validated_data)
 
-        return Response(
+        return auth_response(
             result,
-            status=status.HTTP_200_OK,
+            status_code=status.HTTP_200_OK,
         )
 
 
@@ -389,7 +424,4 @@ class AdminLogoutView(APIView):
 
         logger.info("Admin logout successful user_id=%s", request.user.id)
 
-        return Response(
-            {"message": "Admin logout successful."},
-            status=status.HTTP_200_OK,
-        )
+        return logout_response(request)
