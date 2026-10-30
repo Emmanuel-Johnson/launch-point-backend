@@ -123,6 +123,7 @@ GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID")
 # Frontend origin
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
 ]
 
 # Allow cookies in cross-origin requests
