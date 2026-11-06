@@ -6,7 +6,8 @@ from apps.instructors.models import InstructorApplication
 class AdminInstructorApplicationListSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source="user.email", read_only=True)
     categories = serializers.SerializerMethodField()
-    years_of_experience = serializers.SerializerMethodField()
+    experience_years = serializers.IntegerField(read_only=True)
+    experience_months = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = InstructorApplication
@@ -16,7 +17,8 @@ class AdminInstructorApplicationListSerializer(serializers.ModelSerializer):
             "email",
             "profile_image",
             "occupation",
-            "years_of_experience",
+            "experience_years",
+            "experience_months",
             "status",
             "submitted_at",
             "categories",
@@ -25,16 +27,14 @@ class AdminInstructorApplicationListSerializer(serializers.ModelSerializer):
     def get_categories(self, obj):
         return list(obj.categories_to_teach.values_list("name", flat=True))
 
-    def get_years_of_experience(self, obj):
-        return obj.get_years_of_experience_display()
-
 
 class AdminInstructorApplicationDetailSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         source="user.email",
         read_only=True,
     )
-    years_of_experience = serializers.SerializerMethodField()
+    experience_years = serializers.IntegerField(read_only=True)
+    experience_months = serializers.IntegerField(read_only=True)
     categories = serializers.SerializerMethodField()
     resume_url = serializers.SerializerMethodField()
     resume_name = serializers.SerializerMethodField()
@@ -51,7 +51,8 @@ class AdminInstructorApplicationDetailSerializer(serializers.ModelSerializer):
             "location",
             "occupation",
             "education",
-            "years_of_experience",
+            "experience_years",
+            "experience_months",
             "professional_bio",
             "motivation",
             "categories",
@@ -66,9 +67,6 @@ class AdminInstructorApplicationDetailSerializer(serializers.ModelSerializer):
             "admin_message",
             "reviewed_at",
         )
-
-    def get_years_of_experience(self, obj):
-        return obj.get_years_of_experience_display()
 
     def get_categories(self, obj):
         return list(obj.categories_to_teach.values_list("name", flat=True))
