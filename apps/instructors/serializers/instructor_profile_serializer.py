@@ -12,10 +12,9 @@ class InstructorProfileSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
-    years_of_experience = serializers.CharField(
-        source="get_years_of_experience_display",
-        read_only=True,
-    )
+    experience_years = serializers.IntegerField(read_only=True)
+
+    experience_months = serializers.IntegerField(read_only=True)
 
     categories = serializers.SlugRelatedField(
         many=True,
@@ -35,7 +34,8 @@ class InstructorProfileSerializer(serializers.ModelSerializer):
             "professional_bio",
             "education",
             "location",
-            "years_of_experience",
+            "experience_years",
+            "experience_months",
             "categories",
             "linkedin_url",
             "github_url",
@@ -67,8 +67,15 @@ class InstructorProfileUpdateSerializer(serializers.ModelSerializer):
         source="categories_to_teach",
     )
 
-    years_of_experience = serializers.ChoiceField(
-        choices=InstructorProfile._meta.get_field("years_of_experience").choices,
+    experience_years = serializers.IntegerField(
+        min_value=0,
+        max_value=32767,
+        required=False,
+    )
+
+    experience_months = serializers.IntegerField(
+        min_value=0,
+        max_value=11,
         required=False,
     )
 
@@ -82,7 +89,8 @@ class InstructorProfileUpdateSerializer(serializers.ModelSerializer):
             "professional_bio",
             "education",
             "location",
-            "years_of_experience",
+            "experience_years",
+            "experience_months",
             "categories",
             "linkedin_url",
             "github_url",

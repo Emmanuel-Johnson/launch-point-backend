@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models import Q
 
@@ -8,13 +9,6 @@ class InstructorApplication(models.Model):
         PENDING = "pending", "Pending"
         APPROVED = "approved", "Approved"
         REJECTED = "rejected", "Rejected"
-
-    class Experience(models.TextChoices):
-        LESS_THAN_ONE = "less_than_one", "Less than 1 year"
-        ONE_TO_THREE = "one_to_three", "1–3 years"
-        THREE_TO_FIVE = "three_to_five", "3–5 years"
-        FIVE_TO_TEN = "five_to_ten", "5–10 years"
-        TEN_PLUS = "ten_plus", "10+ years"
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -36,9 +30,10 @@ class InstructorApplication(models.Model):
     # Professional information submitted for review
     occupation = models.CharField(max_length=150, blank=True)
     education = models.CharField(max_length=200, blank=True)
-    years_of_experience = models.CharField(
-        max_length=20,
-        choices=Experience.choices,
+    experience_years = models.PositiveSmallIntegerField(default=0)
+    experience_months = models.PositiveSmallIntegerField(
+        default=0,
+        validators=[MaxValueValidator(11)],
     )
     categories_to_teach = models.ManyToManyField(
         "categories.Category",
@@ -97,6 +92,10 @@ class InstructorApplication(models.Model):
                 condition=Q(status="approved"),
                 name="unique_approved_instructor_application_per_user",
             ),
+            models.CheckConstraint(
+                condition=Q(experience_months__gte=0, experience_months__lte=11),
+                name="valid_instructor_experience_months",
+            ),
         ]
 
     def __str__(self):
@@ -150,10 +149,10 @@ class InstructorProfile(models.Model):
     professional_bio = models.TextField(max_length=1000, blank=True)
     education = models.CharField(max_length=200, blank=True)
     location = models.CharField(max_length=150, blank=True)
-    years_of_experience = models.CharField(
-        max_length=20,
-        choices=InstructorApplication.Experience.choices,
-        blank=True,
+    experience_years = models.PositiveSmallIntegerField(default=0)
+    experience_months = models.PositiveSmallIntegerField(
+        default=0,
+        validators=[MaxValueValidator(11)],
     )
     categories_to_teach = models.ManyToManyField(
         "categories.Category",
@@ -174,6 +173,12 @@ class InstructorProfile(models.Model):
 
     class Meta:
         db_table = "instructor_profiles"
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(experience_months__gte=0, experience_months__lte=11),
+                name="valid_profile_experience_months",
+            )
+        ]
 
     def __str__(self):
         return f"Instructor Profile - {self.full_name}"
