@@ -16,6 +16,8 @@ class InstructorProfileSerializer(serializers.ModelSerializer):
 
     experience_months = serializers.IntegerField(read_only=True)
 
+    application_submitted_at = serializers.DateTimeField(read_only=True)
+
     categories = serializers.SlugRelatedField(
         many=True,
         read_only=True,
@@ -41,6 +43,7 @@ class InstructorProfileSerializer(serializers.ModelSerializer):
             "github_url",
             "portfolio_url",
             "became_instructor_at",
+            "application_submitted_at",
             "created_at",
             "updated_at",
         )
