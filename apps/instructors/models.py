@@ -154,6 +154,12 @@ class InstructorProfile(models.Model):
         default=0,
         validators=[MaxValueValidator(11)],
     )
+    # Date the instructor application was submitted
+    application_submitted_at = models.DateTimeField(null=True, blank=True)
+
+    # Set when the application is approved
+    became_instructor_at = models.DateTimeField(null=True, blank=True)
+
     categories_to_teach = models.ManyToManyField(
         "categories.Category",
         related_name="instructor_profiles",
@@ -164,9 +170,6 @@ class InstructorProfile(models.Model):
     linkedin_url = models.URLField(max_length=255, blank=True)
     github_url = models.URLField(max_length=255, blank=True)
     portfolio_url = models.URLField(max_length=255, blank=True)
-
-    # Set when the application is approved
-    became_instructor_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
