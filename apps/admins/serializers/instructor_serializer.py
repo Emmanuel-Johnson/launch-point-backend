@@ -11,10 +11,8 @@ class InstructorListSerializer(serializers.ModelSerializer):
 
     profile_image = serializers.ImageField(read_only=True)
 
-    years_of_experience = serializers.CharField(
-        source="get_years_of_experience_display",
-        read_only=True,
-    )
+    experience_years = serializers.IntegerField(read_only=True)
+    experience_months = serializers.IntegerField(read_only=True)
 
     categories = serializers.SlugRelatedField(
         many=True,
@@ -33,7 +31,8 @@ class InstructorListSerializer(serializers.ModelSerializer):
             "profile_image",
             "occupation",
             "location",
-            "years_of_experience",
+            "experience_years",
+            "experience_months",
             "categories",
             "became_instructor_at",
         ]
@@ -47,10 +46,8 @@ class InstructorDetailSerializer(serializers.ModelSerializer):
 
     profile_image = serializers.ImageField(read_only=True)
 
-    years_of_experience = serializers.CharField(
-        source="get_years_of_experience_display",
-        read_only=True,
-    )
+    experience_years = serializers.IntegerField(read_only=True)
+    experience_months = serializers.IntegerField(read_only=True)
 
     categories = serializers.SlugRelatedField(
         many=True,
@@ -71,7 +68,8 @@ class InstructorDetailSerializer(serializers.ModelSerializer):
             "professional_bio",
             "education",
             "location",
-            "years_of_experience",
+            "experience_years",
+            "experience_months",
             "categories",
             "linkedin_url",
             "github_url",

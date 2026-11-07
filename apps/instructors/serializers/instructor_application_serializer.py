@@ -139,7 +139,8 @@ class InstructorApplicationCreateSerializer(serializers.ModelSerializer):
             "profile_image",
             "occupation",
             "education",
-            "years_of_experience",
+            "experience_years",
+            "experience_months",
             "categories_to_teach",
             "professional_bio",
             "phone_number",
@@ -165,10 +166,8 @@ class InstructorApplicationCreateSerializer(serializers.ModelSerializer):
                 "required": True,
                 "allow_blank": False,
             },
-            "years_of_experience": {
-                "required": True,
-                "allow_blank": False,
-            },
+            "experience_years": {"required": True},
+            "experience_months": {"required": True},
             "professional_bio": {
                 "required": True,
                 "allow_blank": False,
@@ -271,20 +270,6 @@ class InstructorApplicationCreateSerializer(serializers.ModelSerializer):
 
         if len(value) > 150:
             raise serializers.ValidationError("Education cannot exceed 150 characters.")
-
-        return value
-
-    # ---------------------------------------------------------
-    # Experience
-    # ---------------------------------------------------------
-
-    def validate_years_of_experience(self, value):
-        valid_values = {
-            choice[0] for choice in InstructorApplication.Experience.choices
-        }
-
-        if value not in valid_values:
-            raise serializers.ValidationError("Please select a valid experience level.")
 
         return value
 
@@ -476,7 +461,8 @@ class InstructorApplicationDetailSerializer(serializers.ModelSerializer):
             "profile_image",
             "occupation",
             "education",
-            "years_of_experience",
+            "experience_years",
+            "experience_months",
             "categories_to_teach",
             "professional_bio",
             "motivation",
