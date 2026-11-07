@@ -94,6 +94,7 @@ class InstructorApplicationRepository:
                 "github_url": application.github_url,
                 "portfolio_url": application.portfolio_url,
                 "became_instructor_at": application.reviewed_at,
+                "application_submitted_at": application.submitted_at,
             },
         )
 
